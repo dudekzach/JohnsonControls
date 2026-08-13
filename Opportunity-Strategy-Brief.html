@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genesys AE / SA Initial Opportunity Strategy Brief — Conversational Voice Self-Service POC</title>
+<style>
+  :root{
+    --ink:#15202b;
+    --ink-2:#33465a;
+    --ink-3:#5b7086;
+    --rule:#dde4ea;
+    --rule-2:#eaeff3;
+    --paper:#ffffff;
+    --shell:#f2f5f8;
+    --accent:#0f5c73;
+    --accent-soft:#e6f1f4;
+    --fact:#1c4f7c;
+    --fact-bg:#e8f0f7;
+    --sa:#4a3a8c;
+    --sa-bg:#eeeaf8;
+    --val:#8a5300;
+    --val-bg:#fdf1de;
+    --high:#9c2621;
+    --high-bg:#fbe9e7;
+    --med:#8a5300;
+    --med-bg:#fdf1de;
+    --low:#2c6146;
+    --low-bg:#e7f2ec;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--shell);
+    color:var(--ink);
+    font-family:var(--font);
+    font-size:17.5px;
+    line-height:1.58;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (max-width:1100px){ body{font-size:17px;} }
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    background:var(--ink);
+    color:#fff;
+    border-bottom:4px solid var(--accent);
+  }
+  .masthead-inner{
+    max-width:1240px;margin:0 auto;padding:30px 28px 26px;
+  }
+  .eyebrow{
+    font-size:.72em;letter-spacing:.16em;text-transform:uppercase;
+    color:#8fb4c0;font-weight:700;margin:0 0 10px;
+  }
+  .masthead h1{
+    margin:0;font-size:1.72em;line-height:1.24;font-weight:700;letter-spacing:-.01em;
+  }
+  .masthead .sub{margin:10px 0 0;color:#c3d2dc;font-size:.95em;max-width:70ch;}
+  .metastrip{
+    display:flex;flex-wrap:wrap;gap:8px 28px;margin:20px 0 0;
+    padding-top:16px;border-top:1px solid #2b3d4d;
+    font-size:.82em;color:#a9bdc9;
+  }
+  .metastrip b{color:#fff;font-weight:600;}
+  .confidential{
+    display:inline-block;margin-top:14px;font-size:.72em;letter-spacing:.13em;
+    text-transform:uppercase;font-weight:700;color:#f0c98a;
+  }
+
+  /* ---------- Shell / layout ---------- */
+  .shell{
+    max-width:1240px;margin:0 auto;padding:26px 28px 80px;
+    display:grid;grid-template-columns:238px minmax(0,1fr);gap:30px;align-items:start;
+  }
+  @media (max-width:960px){
+    .shell{grid-template-columns:minmax(0,1fr);gap:20px;padding:18px 16px 60px;}
+  }
+
+  /* ---------- Jump To ---------- */
+  .jump{
+    position:sticky;top:20px;
+    background:var(--paper);border:1px solid var(--rule);border-radius:12px;
+    padding:18px 16px;box-shadow:0 1px 2px rgba(21,32,43,.05);
+  }
+  @media (max-width:960px){ .jump{position:static;} }
+  .jump h2{
+    margin:0 0 12px;font-size:.72em;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-3);font-weight:700;
+  }
+  .jump ol{list-style:none;margin:0;padding:0;counter-reset:j;}
+  .jump li{counter-increment:j;}
+  .jump a{
+    display:flex;gap:9px;align-items:baseline;
+    padding:7px 8px;border-radius:7px;margin:1px 0;
+    color:var(--ink-2);text-decoration:none;font-size:.9em;line-height:1.35;
+  }
+  .jump a::before{
+    content:counter(j) " ·";
+    color:var(--ink-3);font-variant-numeric:tabular-nums;font-size:.92em;flex:none;
+  }
+  .jump a:hover{background:var(--accent-soft);color:var(--accent);}
+  .jump a:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+  .jump a.active{background:var(--accent-soft);color:var(--accent);font-weight:600;}
+  .jump a.active::before{color:var(--accent);}
+  .jump .top{
+    display:block;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule-2);
+    font-size:.8em;color:var(--ink-3);text-decoration:none;
+  }
+  .jump .top:hover{color:var(--accent);}
+
+  /* ---------- Content ---------- */
+  main{min-width:0;}
+  section{
+    background:var(--paper);border:1px solid var(--rule);border-radius:12px;
+    padding:30px 34px 34px;margin:0 0 22px;
+    box-shadow:0 1px 2px rgba(21,32,43,.04);
+    scroll-margin-top:20px;
+  }
+  @media (max-width:700px){ section{padding:22px 18px 26px;} }
+  section > h2{
+    margin:0 0 4px;font-size:1.34em;line-height:1.28;font-weight:700;letter-spacing:-.01em;
+  }
+  .secnum{
+    display:block;font-size:.62em;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin-bottom:8px;
+  }
+  .deck{
+    margin:12px 0 0;color:var(--ink-2);font-size:1.02em;
+    padding-bottom:18px;border-bottom:1px solid var(--rule-2);
+  }
+  h3{margin:28px 0 8px;font-size:1.06em;font-weight:700;letter-spacing:-.005em;}
+  h4{margin:20px 0 6px;font-size:.95em;font-weight:700;color:var(--ink-2);}
+  p{margin:0 0 14px;}
+  ul,ol{margin:0 0 14px;padding-left:22px;}
+  li{margin:0 0 7px;}
+  strong{font-weight:650;}
+  a{color:var(--accent);}
+  code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.87em;background:var(--rule-2);padding:1px 5px;border-radius:4px;
+  }
+
+  /* ---------- Callouts ---------- */
+  .callout{
+    border-left:4px solid var(--accent);background:var(--accent-soft);
+    padding:16px 18px;border-radius:0 8px 8px 0;margin:0 0 20px;
+  }
+  .callout.warn{border-left-color:var(--high);background:var(--high-bg);}
+  .callout.note{border-left-color:var(--val);background:var(--val-bg);}
+  .callout p:last-child{margin-bottom:0;}
+  .callout .label{
+    display:block;font-size:.72em;letter-spacing:.13em;text-transform:uppercase;
+    font-weight:700;margin-bottom:6px;color:var(--accent);
+  }
+  .callout.warn .label{color:var(--high);}
+  .callout.note .label{color:var(--val);}
+
+  .bottomline{
+    background:var(--ink);color:#eaf1f5;border-radius:10px;padding:20px 22px;margin:0 0 22px;
+  }
+  .bottomline .label{
+    display:block;font-size:.72em;letter-spacing:.14em;text-transform:uppercase;
+    color:#8fb4c0;font-weight:700;margin-bottom:8px;
+  }
+  .bottomline p{margin:0 0 12px;}
+  .bottomline p:last-child{margin:0;}
+  .bottomline strong{color:#fff;}
+
+  /* ---------- Numbered issue list ---------- */
+  .issues{list-style:none;padding:0;margin:0 0 8px;counter-reset:iss;}
+  .issues > li{
+    counter-increment:iss;position:relative;
+    padding:0 0 16px 46px;margin:0 0 16px;border-bottom:1px solid var(--rule-2);
+  }
+  .issues > li:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0;}
+  .issues > li::before{
+    content:counter(iss);position:absolute;left:0;top:1px;
+    width:30px;height:30px;border-radius:50%;
+    background:var(--ink);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.8em;font-weight:700;
+  }
+  .issues .hd{display:block;font-weight:650;margin-bottom:4px;}
+
+  /* ---------- Tables ---------- */
+  .tablewrap{
+    overflow-x:auto;margin:0 0 20px;border:1px solid var(--rule);border-radius:9px;
+    -webkit-overflow-scrolling:touch;
+  }
+  table{border-collapse:collapse;width:100%;min-width:620px;font-size:.93em;}
+  caption{
+    caption-side:top;text-align:left;padding:12px 14px;font-size:.86em;
+    color:var(--ink-3);border-bottom:1px solid var(--rule);background:#fafcfd;
+  }
+  th,td{padding:11px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--rule-2);}
+  thead th{
+    background:#f6f9fb;font-size:.86em;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--ink-2);font-weight:700;border-bottom:1px solid var(--rule);
+  }
+  tbody tr:last-child td{border-bottom:0;}
+  tbody tr:nth-child(even){background:#fcfdfe;}
+  td.nowrap{white-space:nowrap;}
+
+  /* ---------- Pills ---------- */
+  .pill{
+    display:inline-block;font-size:.7em;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;padding:3px 8px;border-radius:20px;white-space:nowrap;
+  }
+  .p-fact{background:var(--fact-bg);color:var(--fact);}
+  .p-sa{background:var(--sa-bg);color:var(--sa);}
+  .p-val{background:var(--val-bg);color:var(--val);}
+  .p-high{background:var(--high-bg);color:var(--high);}
+  .p-med{background:var(--med-bg);color:var(--med);}
+  .p-low{background:var(--low-bg);color:var(--low);}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 20px;font-size:.85em;color:var(--ink-3);align-items:center;}
+  .legend span.pill{margin-right:5px;}
+
+  /* ---------- Theme blocks ---------- */
+  .theme{
+    border:1px solid var(--rule);border-radius:10px;padding:18px 20px;margin:0 0 16px;
+    background:#fcfdfe;
+  }
+  .theme h4{margin:0 0 10px;font-size:1.01em;color:var(--ink);}
+  .theme dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;}
+  @media (max-width:620px){ .theme dl{grid-template-columns:minmax(0,1fr);gap:2px;} }
+  .theme dt{
+    font-size:.76em;letter-spacing:.09em;text-transform:uppercase;font-weight:700;
+    color:var(--ink-3);padding-top:3px;white-space:nowrap;
+  }
+  .theme dd{margin:0;}
+
+  /* ---------- Talk track ---------- */
+  .quote{
+    border:1px solid var(--rule);border-left:4px solid var(--accent);
+    background:#fbfdfe;border-radius:0 8px 8px 0;padding:18px 20px;margin:0 0 20px;
+    font-size:1.02em;
+  }
+  .quote p{margin:0 0 12px;}
+  .quote p:last-child{margin:0;}
+
+  .kv{list-style:none;padding:0;margin:0 0 18px;}
+  .kv li{
+    padding:10px 0;border-bottom:1px solid var(--rule-2);margin:0;
+    display:grid;grid-template-columns:96px minmax(0,1fr);gap:16px;
+  }
+  @media (max-width:620px){ .kv li{grid-template-columns:minmax(0,1fr);gap:2px;} }
+  .kv li:last-child{border-bottom:0;}
+  .kv .t{font-weight:700;font-size:.86em;color:var(--accent);font-variant-numeric:tabular-nums;}
+
+  footer.docfoot{
+    max-width:1240px;margin:0 auto;padding:0 28px 50px;
+    color:var(--ink-3);font-size:.85em;
+  }
+  @media (max-width:960px){ footer.docfoot{padding:0 16px 40px;} }
+  footer.docfoot p{margin:0 0 6px;}
+
+  @media print{
+    body{background:#fff;font-size:11pt;}
+    .jump,.masthead{position:static;}
+    .jump{display:none;}
+    .shell{display:block;max-width:none;padding:0;}
+    section{break-inside:auto;box-shadow:none;border:0;border-top:1px solid #999;border-radius:0;padding:14px 0;}
+    .bottomline{background:#fff;color:#000;border:1px solid #333;}
+    .bottomline .label,.bottomline strong{color:#000;}
+  }
+  @media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto;} }
+</style>
+</head>
+<body>
+
+<header class="masthead" id="top">
+  <div class="masthead-inner">
+    <p class="eyebrow">Internal Pre-Sales Strategy — Not for Customer Distribution</p>
+    <h1>Genesys AE / SA Initial Opportunity Strategy Brief</h1>
+    <p class="sub">Johnson Controls — POC Statement of Work &amp; Current-State Technical Baseline: Conversational Voice Self-Service Platform</p>
+    <div class="metastrip">
+      <span><b>Source document:</b> POC SOW v0.3, 08/05/2026 (Mario Navarro)</span>
+      <span><b>Incumbent stack:</b> NICE Contact Center Platform + Omilia Cloud Platform</span>
+      <span><b>In-scope self-service:</b> System Test-On</span>
+      <span><b>Prepared for:</b> Account Executive / Solution Consultant alignment</span>
+    </div>
+    <span class="confidential">Genesys internal use only</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <nav class="jump" aria-label="Jump to section">
+    <h2>Jump to</h2>
+    <ol>
+      <li><a href="#s1">Executive readout</a></li>
+      <li><a href="#s2">What they're evaluating</a></li>
+      <li><a href="#s3">Current-state readout</a></li>
+      <li><a href="#s4">Genesys positioning</a></li>
+      <li><a href="#s5">POC win strategy</a></li>
+      <li><a href="#s6">Risks &amp; watch items</a></li>
+      <li><a href="#s7">Questions for the AE</a></li>
+      <li><a href="#s8">Customer discovery</a></li>
+      <li><a href="#s9">AE conversation plan</a></li>
+      <li><a href="#s10">Immediate next actions</a></li>
+      <li><a href="#s11">Evidence &amp; validation</a></li>
+      <li><a href="#s12">Useful extensions</a></li>
+    </ol>
+    <a class="top" href="#top">↑ Back to top</a>
+  </nav>
+
+  <main>
+
+    <!-- ============ 1 ============ -->
+    <section id="s1">
+      <span class="secnum">Section 1</span>
+      <h2>Executive Readout</h2>
+      <p class="deck">Read this first. Everything below supports these conclusions.</p>
+
+      <div class="bottomline">
+        <span class="label">Bottom line</span>
+        <p>This document is presented as a voice self-service POC. It reads as <strong>the controlled first step of a platform evaluation</strong>. A single self-service use case (System Test-On) sits alongside requests for manual, automatic and predictive outbound dialing, chat and SMS self-service recommendations, containment reporting and operational dashboards. Those asks do not belong to a voicebot bakeoff. They belong to a CCaaS comparison.</p>
+        <p>Second conclusion, equally important: <strong>the "current-state technical baseline" is a lightly de-branded Omilia design specification</strong>. Omilia product terminology, node numbering, Visio flow exports, web-service definitions and even unresolved editorial comments about neutralizing that terminology survive in the file we were sent. We are being asked to reproduce a working incumbent application, on paper, against a spec written by its designer. Parity is table stakes. The win comes from compressing the design, not matching it.</p>
+        <p><strong>Preliminary posture: pursue, qualify hard.</strong> Technically winnable and a good fit for Genesys Cloud CX. The strategic risk is not losing the POC — it is winning a bot-only POC that leaves NICE as the platform of record and Genesys as a subcontracted speech layer.</p>
+      </div>
+
+      <h3>What the POC is fundamentally testing</h3>
+      <p>Whether a vendor can rebuild Johnson Controls' conversational voice front door on its own platform and operate it against JCI's alarm-monitoring back end: open-ended intent capture and call steering, FAQ announcements, caller identification and verification, the System Test-On workflow with its eligibility rules, error and containment handling, transfer with context back to the contact center platform, and reporting — in English <em>and</em> Spanish (POC SOW §2, §12).</p>
+      <p>Underneath that stated test sit three unstated ones: can the vendor deliver without the APIs being ready; can the vendor simplify a design that has become expensive to maintain; and does the vendor's platform cover ground the current two-vendor stack does not.</p>
+
+      <h3>The five things the AE should understand immediately</h3>
+      <ol class="issues">
+        <li>
+          <span class="hd">We are responding to the incumbent's own design document.</span>
+          The baseline preserves Omilia constructs — miniApps, reference nodes (0100, 0510, 1044, 1070), OCP Console, the full prompt matrix, every web-service contract. Two review comments were never cleaned up, one asking to neutralize the miniApp language and the reply explaining the original Visio diagrams could not be recreated in time. Practical effect: whoever writes the most literal parity response looks safest to a technical reviewer, and Omilia looks safest of all. Our response has to reframe the evaluation criteria, not just satisfy them.
+        </li>
+        <li>
+          <span class="hd">The architecture question is unresolved, and it decides the size of this deal.</span>
+          The document assumes the contact center platform stays and the vendor plugs into it (baseline §5: SIP via NICE virtual number, RTP to the bot platform, NICE Studio scripts, screen pop on return). If we answer inside that frame, our ceiling is a self-service attach behind a competitor's CCaaS. If we propose Genesys Cloud CX as the voice front door with transfer to NICE during coexistence, we compete for the platform. Same POC, two entirely different opportunities. The AE needs to choose deliberately, and early.
+        </li>
+        <li>
+          <span class="hd">Every API in the document is unbuilt or undisclosed.</span>
+          Eight services are specified — SiteSearch, ContactSearch, ValidatePin, GetSystemsBySiteNo, GetSiteSystemOption, GetUnclearedSystemTestsBySiteNo, PlaceOnTest — and each carries "URL: To be provided later." Credentials are placeholders, and the API username in the document is literally <code>omiliaapi</code>. Any POC schedule we quote is hostage to JCI IT unless we bring our own mock service layer.
+        </li>
+        <li>
+          <span class="hd">Spanish is new scope, not parity.</span>
+          The baseline states supported languages as US English with full NLU. The POC requires the System Test-On journey in English and Spanish, with localized prompts, Spanish recognition, bilingual test coverage and per-language reporting (POC SOW §2, §9, §12). Competitors who treat this as a checkbox will underscope it. It is also one of the cleanest places to show a structural advantage rather than a feature.
+        </li>
+        <li>
+          <span class="hd">Outbound and digital are the consolidation tell — and our only platform-level surface in this document.</span>
+          Outbound dialing appears in scope, integration requirements, deliverables, success criteria and the vendor checklist. Chat and SMS appear as a required recommendation. Nothing about System Test-On needs a predictive dialer. Someone in JCI's evaluation team is measuring breadth.
+        </li>
+      </ol>
+
+      <h3>Preliminary opportunity assessment</h3>
+      <ul>
+        <li><strong>Fit:</strong> strong. Intent capture, ID&amp;V, API-driven eligibility logic, bilingual voice, transfer with context, native reporting, outbound and digital in one platform — this maps cleanly to Genesys Cloud CX with AI Studio and Architect. <span class="pill p-sa">SA view</span></li>
+        <li><strong>Qualification:</strong> incomplete. No named sponsor, no business case, no volumes, no decision process, no timeline, no competitive set, no stated JCI Genesys footprint anywhere in the document. This is an SOW, not a qualified opportunity.</li>
+        <li><strong>Effort:</strong> the System Test-On rule set is the real work — primary/secondary/unmonitored system resolution, fire-alarm classification codes, uncleared-test overlap, date-window validation in site time zone. Underestimating this is the most likely cause of a POC that slips or demos thin.</li>
+        <li><strong>Recommended stance:</strong> compete for the platform decision, deliver the POC narrowly and exceptionally, and refuse to be scoped as a bot vendor.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section id="s2">
+      <span class="secnum">Section 2</span>
+      <h2>What the Customer Is Evaluating</h2>
+      <p class="deck">The POC in business and solution terms, not a restatement of the requirement list.</p>
+
+      <h3>Core use cases</h3>
+      <p>One journey carries the evaluation. <strong>System Test-On</strong> lets an authorized caller place an alarm system or site into test mode so maintenance or testing can occur without normal alarm handling being triggered (POC SOW §9). It is a high-volume, low-value, rules-heavy call that JCI clearly wants off the agent desktop — and one where a wrong outcome has real consequences, because an incorrectly suppressed alarm is a safety and liability event, not a bad customer experience.</p>
+      <p>Around that journey sit four supporting capabilities: open-ended intent capture with disambiguation and routing; static FAQ announcements with repeat / new task / close handling; caller identification and verification; and transfer to a live agent with captured context. Outbound dialing and chat/SMS are positioned as demonstrate-or-describe, not build.</p>
+
+      <h3>Required customer experience</h3>
+      <ul>
+        <li>Speech-first. Keypad accepted only where explicitly required or allowed, with defined error handling when a caller presses keys anyway (POC SOW §4).</li>
+        <li>Conversational, jargon-free, concise prompts; confirmation wherever data accuracy matters before submission.</li>
+        <li>Repeat, start over, new task and close intents supported where applicable.</li>
+        <li><strong>Containment attempted, then honored.</strong> When a caller asks for an agent, the assistant may attempt to help once, then must transfer at configured thresholds or when business rules require it. The current-state threshold is two agent requests.</li>
+        <li>Explicit fallback for silence, unclear speech, invalid DTMF, invalid values and integration failure.</li>
+      </ul>
+
+      <h3>Integration expectations</h3>
+      <ul>
+        <li>Inbound call delivery from the contact center platform, and return transfer to it (POC SOW §7).</li>
+        <li>Consumption of REST or equivalent services to authenticate, search, validate and update site test status.</li>
+        <li>Token-based API authentication, secure credential handling, protection of sensitive data.</li>
+        <li>Configurable endpoints, payloads, response mapping, retry behavior, timeout handling and failure routing.</li>
+        <li>Captured values and derived context passed back for agent screen pop, routing, reporting and post-call analysis.</li>
+      </ul>
+
+      <h3>Success criteria — and the gap in them</h3>
+      <p>Eleven acceptance areas are defined: call entry, intent recognition, authentication, System Test-On, bilingual System Test-On, transfer handoff, self-service exit, error handling, reporting, outbound dialing, chat and SMS (POC SOW §12). <strong>Every one is demonstration-based. Not one carries a number.</strong> There is no target containment rate, no intent-accuracy threshold, no completion-rate goal, no latency budget.</p>
+      <div class="callout">
+        <span class="label">Why this matters</span>
+        <p>Unquantified criteria get scored on impression and on how closely a response resembles what the reviewer already knows. That favors the incumbent. Co-authoring measurable criteria with JCI — intent accuracy on a shared utterance set, Test-On completion rate, per-language parity, containment — is both a genuine service to them and a way to move the scoring onto ground we can win. <span class="pill p-sa">SA recommendation</span></p>
+      </div>
+
+      <h3>Customer responsibilities and dependencies</h3>
+      <p>JCI owns non-production API access, test credentials, test data and integration documentation; routing and handoff requirements; representative intents, FAQs and approved prompt language; approval of business rules, exception logic, test cases and success criteria; and participation in design reviews, testing, triage and evaluation (POC SOW §11). The assumptions section states plainly that APIs, credentials, network access, sample data and routing paths <em>will be available before build begins</em> (POC SOW §13). Treat that as the single most important commitment in the document and get it dated.</p>
+
+      <h3>Explicitly out of scope</h3>
+      <ul>
+        <li>Production deployment of anything, including multilingual, outbound, chat and SMS, unless separately agreed.</li>
+        <li>Additional self-service use cases beyond System Test-On.</li>
+        <li>Redesign or replacement of upstream or downstream enterprise systems.</li>
+        <li>Production security certification, performance tuning, DR and the operational support model.</li>
+        <li>Historical data migration and incumbent platform configuration migration.</li>
+      </ul>
+      <p>That last exclusion is worth reading twice. JCI has pre-decided that <strong>nothing from the current implementation gets migrated</strong>. Whoever wins rebuilds from requirements. That removes the incumbent's usual switching-cost argument and it is a point the AE should hold onto.</p>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section id="s3">
+      <span class="secnum">Section 3</span>
+      <h2>Current-State Readout</h2>
+      <p class="deck">What the baseline tells us about the environment, and what actually has to be preserved.</p>
+
+      <h3>NICE Contact Center Platform</h3>
+      <p>NICE owns the call. It answers, treats and routes; it hands audio to the bot platform over SIP using a NICE virtual number; it receives the JSON result and delivers audio plus screen pop to the agent (baseline §5.1–5.3). Integration is script-level: download NICE Studio scripts, import them, update with the bot application ID.</p>
+      <p><span class="pill p-sa">SA view</span> Two implications. First, the integration pattern JCI knows is "bot as an attached leg," so a Genesys-fronted architecture will need to be positioned deliberately rather than assumed. Second, this seam is where JCI's operational pain concentrates — two consoles, two reporting models, a hand-built JSON contract carrying eighteen fields, and no single system of record for the interaction. Every one of those is an argument for consolidation, and none of them requires us to criticize NICE.</p>
+
+      <h3>Omilia conversational voice implementation</h3>
+      <p>The application is assembled from typed miniApps — Intent, Announcement, YesNo, Numeric, Alphanumeric, Amount, Date, Entity, WebService, and Intelli for JavaScript business logic — composed into subdialog flows (baseline §1.1, §3.3). It works. It is also a rigid state machine whose behavior lives in configuration spread across dozens of numbered nodes.</p>
+      <p>The maintenance cost shows in the prompt matrix. Nearly every collection step carries an initial prompt, a first-error rephrase, a second-error rephrase, an agent-request reaction, an agent-request first-error rephrase, plus weighted error reactions at 40/30/30. For four ID&amp;V fields and roughly a dozen Test-On steps, that is well over a hundred authored strings — before Spanish doubles it. Adding a use case means authoring another set. Adding a language means authoring them all again.</p>
+      <div class="callout note">
+        <span class="label">Read this as the real "why change"</span>
+        <p>Nothing in the document says JCI is unhappy. But a company satisfied with its conversational platform does not put a single self-service journey out to a rebuild POC, exclude configuration migration, add a second language, and ask about dialers. The likely driver is cost-plus-agility on a two-vendor stack. <span class="pill p-val">Validate with AE</span></p>
+      </div>
+
+      <h3>Authentication and verification — name it accurately</h3>
+      <p>The document calls this authentication. Functionally it is <strong>identification by account lookup, followed by authorization</strong>. The caller is located via ANI against SiteSearch, falling back to ContactSearch to obtain a site number, then to spoken central station number, then phone number, then street number plus zip code (baseline §4.3). None of those factors is a secret. The actual authorization check is the PIC — the personal identification code, spelled letter by letter, validated by ValidatePin, which returns both a validity flag and a <code>pin_on_test_flag</code> indicating whether that contact is authorized to place a test.</p>
+      <p>Two consequences. <strong>The verification factor is the PIC, and it is spoken.</strong> It appears in the audio, in the transcript, and — per baseline §5.3 — in the JSON posted back to the contact center platform as a field named <code>PIC</code>, alongside <code>IsPicValid</code>. That is a sensitive-data handling conversation we should raise before they do, and a place where platform-native secure handling is a credible differentiator. <span class="pill p-val">Validate current Genesys Cloud secure-data and recording-redaction capabilities before positioning</span></p>
+
+      <h3>System Test-On complexity — the part everyone will underestimate</h3>
+      <p>Between "yes, put my system on test" and submission sit a series of eligibility gates, each a separate API call:</p>
+      <ul>
+        <li><strong>Active alarm check.</strong> <code>in_alarm_system_no</code> non-null on any site lookup means transfer, immediately.</li>
+        <li><strong>Primary / secondary / unmonitored resolution</strong> via GetSystemsBySiteNo plus GetSiteSystemOption on <code>SYSTEM_UDF1</code>. Two primaries, two secondaries or all-unmonitored transfer. One primary plus one unmonitored proceeds on the primary. Primary plus secondary proceeds on both. More than five candidate systems transfers.</li>
+        <li><strong>Fire-alarm classification</strong> via GetSiteSystemOption on <code>SYSTEM_UDF2</code>, where the returned code decides everything: BAHVAC, BAONLY, CSONLY, METSYS, N/A and SUONLY proceed; Combo, Combo+, FAHVAC and FAONLY transfer.</li>
+        <li><strong>Uncleared tests</strong> via GetUnclearedSystemTestsBySiteNo, returning zone lists, alarm-group lists, service-type lists and only/except modifiers — driving full-versus-partial test confirmation and override prompts.</li>
+        <li><strong>Date and time validation.</strong> Start must be within 30 days of current date or the call transfers; start time may be up to five minutes in the past; all times are site-local, in the site's time zone; submission uses UNIX effective and expire dates with a <code>testcat_id</code> of 1 for customer test, 7 for future-dated, 2 for technician test.</li>
+      </ul>
+      <p>This is not conversational design. It is deterministic, auditable, safety-relevant business logic — and it must be preserved exactly. It also happens to be the strongest argument against a purely generative approach to the whole journey, which is a conversation we should lead rather than have led to us.</p>
+
+      <h3>Error handling and containment</h3>
+      <p>Thresholds are explicit (baseline §4.5): three consecutive no-inputs, three no-matches, three mixed, six global mixed, three disconfirmations, three invalid DTMF at the intent step, two continuous agent requests, two global agent requests. Turn-taking is a five-second timeout with barge-in enabled everywhere (§4.6). These numbers are cheap for us to match and they are the kind of detail a technical reviewer checks, so match them and say so.</p>
+
+      <h3>Operational and reporting expectations</h3>
+      <p>The POC asks for interaction outcomes, intents, transfers, containment, API result status and self-service completion status, plus dashboards in the vendor checklist. The baseline offers no evidence of how any of this is reported today. Reasonable inference: it is stitched from bot-platform logs and NICE reporting. <span class="pill p-sa">SA view</span> Single-platform analytics is one of our least contested advantages here, and it costs the customer nothing to verify during the POC.</p>
+
+      <h3>Preserve versus re-think</h3>
+      <div class="tablewrap">
+        <table>
+          <caption>Separating business requirement from implementation-specific pattern</caption>
+          <thead>
+            <tr><th>Element</th><th>Current-state pattern</th><th>Our position</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Test-On eligibility rules</td><td>Sequential API gates with JavaScript logic in Intelli miniApps</td><td><strong>Preserve exactly.</strong> Deterministic, auditable, safety-relevant. Implement as flow logic and data actions, not model judgment.</td></tr>
+            <tr><td>Date, time and 30-day window rules</td><td>Validation rules plus site time-zone handling</td><td><strong>Preserve.</strong> Confirm time-zone source of truth in discovery.</td></tr>
+            <tr><td>Error thresholds and turn-taking</td><td>Fixed counters, 5s timeouts, global barge-in</td><td><strong>Preserve as defaults,</strong> tune with data later.</td></tr>
+            <tr><td>Transfer context fields</td><td>18-field JSON posted back to NICE, still marked To Be Determined</td><td><strong>Preserve the intent, redesign the contract.</strong> Reopen whether raw PIC belongs in it.</td></tr>
+            <tr><td>Multi-step ID&amp;V ladder</td><td>Four sequential spoken values with separate error trees per field</td><td><strong>Re-think.</strong> Same evidence, fewer turns, less prompt authoring. Improvement candidate, subject to JCI's risk tolerance.</td></tr>
+            <tr><td>Per-node prompt matrix</td><td>100+ hand-authored strings, tripled by agent-request variants and doubled again by Spanish</td><td><strong>Re-think.</strong> The single largest maintainability improvement available.</td></tr>
+            <tr><td>miniApp decomposition and node numbering</td><td>Structural to Omilia's product</td><td><strong>Do not reproduce.</strong> Map requirements to our constructs and provide a traceability matrix so reviewers can follow.</td></tr>
+            <tr><td>Jenny-neural female US-English TTS voice</td><td>Specific vendor neural voice</td><td><strong>Re-think as a requirement, respect as a preference.</strong> Persona traits are the requirement; the specific voice is an artifact. <span class="pill p-val">Validate voice options</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Document hygiene worth noting internally</h3>
+      <p>The baseline has duplicate section numbers (two §4.4), a §3.1 nested under a heading numbered 2, web-service subsections under the wrong parent, and narrative referring to "two self-services" where scope lists only System Test-On. The FAQ intent list is referenced but not included, and <code>FailExitReason</code> values are marked N/A. <span class="pill p-sa">SA view</span> This was assembled quickly. Do not treat gaps as deliberate silence — treat them as unfinished, and offer to help finish them. That posture wins credibility with the document's author, who is likely on the evaluation team.</p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section id="s4">
+      <span class="secnum">Section 4</span>
+      <h2>Genesys Opportunity and Strategic Positioning</h2>
+      <p class="deck">Five themes worth leading with. Each is tied to something in the document, and each is labeled for what it is.</p>
+
+      <div class="legend">
+        <span><span class="pill p-fact">Document fact</span> stated in the attachment</span>
+        <span><span class="pill p-sa">SA view</span> our professional conclusion</span>
+        <span><span class="pill p-val">Validate</span> confirm before asserting to the customer</span>
+      </div>
+
+      <div class="theme">
+        <h4>Theme 1 — One platform instead of a seam</h4>
+        <dl>
+          <dt>Need</dt><dd>Voice self-service, routing, agent handoff, reporting and outbound currently span two vendors joined by SIP and a hand-built JSON contract (baseline §5). <span class="pill p-fact">Document fact</span></dd>
+          <dt>Why it matters</dt><dd>The seam is where context is lost, where reporting fragments, where change requires two vendors to agree, and where nobody owns the end-to-end result.</dd>
+          <dt>Genesys value</dt><dd>Architect flows, AI Studio conversational assets, routing, WEM, outbound and analytics in one platform with one administrative surface and one interaction record. Context does not need to be serialized across a boundary because there is no boundary. <span class="pill p-sa">SA view</span></dd>
+          <dt>Care</dt><dd>Only fully true if Genesys fronts the call. In a coexistence architecture we reduce the seam rather than remove it — position honestly. <span class="pill p-val">Validate architecture with AE</span></dd>
+        </dl>
+      </div>
+
+      <div class="theme">
+        <h4>Theme 2 — Collapse the prompt matrix, keep the rules deterministic</h4>
+        <dl>
+          <dt>Need</dt><dd>Every collection step carries authored initial, first-error, second-error and agent-request prompt variants; Spanish doubles the set (baseline §3.3, §4.2–4.4). <span class="pill p-fact">Document fact</span></dd>
+          <dt>Why it matters</dt><dd>Authoring volume is the tax on every future change. It is why adding a language is a project and adding a use case is a quarter.</dd>
+          <dt>Genesys value</dt><dd>An Agentic Virtual Agent built in AI Studio handles intent capture, disambiguation, reprompting and confirmation through defined behavior and guardrails rather than a per-node string table, while eligibility checks stay in deterministic flow logic and data actions. Fewer authored artifacts, same auditability where it counts. <span class="pill p-sa">SA view</span></dd>
+          <dt>Care</dt><dd>Never imply generative handling of Test-On eligibility. Safety-relevant rules stay deterministic and we should say so before they ask. Confirm current AVA guardrail and confirmation behavior before demoing. <span class="pill p-val">Validate</span></dd>
+        </dl>
+      </div>
+
+      <div class="theme">
+        <h4>Theme 3 — Bilingual as one journey, not two builds</h4>
+        <dl>
+          <dt>Need</dt><dd>System Test-On in English and Spanish, with language handling, localized prompts, Spanish recognition, bilingual test coverage and per-language reporting — against a current state of US English only. <span class="pill p-fact">Document fact</span></dd>
+          <dt>Why it matters</dt><dd>This is real new capability for JCI, it is a stated acceptance criterion, and per-language reporting means they intend to manage it operationally.</dd>
+          <dt>Genesys value</dt><dd>Language handling inside a single journey and a single set of business rules, with language as a reportable dimension rather than a parallel application to maintain. <span class="pill p-sa">SA view</span></dd>
+          <dt>Care</dt><dd>Confirm supported Spanish locales for recognition and speech synthesis, AVA language coverage, and per-language reporting granularity before making commitments. This is the single most important capability check before the AE conversation. <span class="pill p-val">Validate</span></dd>
+        </dl>
+      </div>
+
+      <div class="theme">
+        <h4>Theme 4 — Integration as configuration, with a mock path that protects the schedule</h4>
+        <dl>
+          <dt>Need</dt><dd>Eight services with token-based auth, configurable payloads, response mapping, retry, timeout and failure routing — all endpoints "to be provided later," credentials held by an admin. <span class="pill p-fact">Document fact</span></dd>
+          <dt>Why it matters</dt><dd>The POC's critical path runs through JCI IT. Whoever solves the dependency instead of complaining about it looks like the adult in the room.</dd>
+          <dt>Genesys value</dt><dd>Data actions provide configured REST integration with credential handling, request and response mapping and per-action timeout and failure behavior — no custom middleware. We can build against a mock service that mirrors the documented contracts and swap to live endpoints without redesign. <span class="pill p-sa">SA view</span></dd>
+          <dt>Care</dt><dd>Confirm OAuth flow support against JCI's token and refresh pattern, and data action timeout ceilings against a five-gate sequence. <span class="pill p-val">Validate</span></dd>
+        </dl>
+      </div>
+
+      <div class="theme">
+        <h4>Theme 5 — The breadth they asked about, in the same platform</h4>
+        <dl>
+          <dt>Need</dt><dd>Manual outbound, automatic and predictive dialing, campaign management, compliance controls and outbound reporting; plus recommended chat and SMS self-service with escalation and cross-channel context (POC SOW §2, §7, §10, §12, §15). <span class="pill p-fact">Document fact</span></dd>
+          <dt>Why it matters</dt><dd>These asks have nothing to do with System Test-On. They are how JCI compares platforms without saying so. It is also the only section of the document where a bot vendor has nothing to say.</dd>
+          <dt>Genesys value</dt><dd>Outbound dialing with multiple pacing modes, campaign management and compliance controls, and digital channels including web messaging and SMS, share the same platform, the same routing and the same analytics as the voice journey. Reusing the Test-On logic across channels is a demonstration, not a roadmap slide. <span class="pill p-sa">SA view</span></dd>
+          <dt>Care</dt><dd>Confirm current dialing-mode names, campaign and compliance feature set, and the licensing required for outbound and digital alongside voice self-service. Do not name SKUs in front of the customer until confirmed. <span class="pill p-val">Validate</span></dd>
+        </dl>
+      </div>
+
+      <h3>What not to lead with</h3>
+      <p>Skip AI-platform generalities, analyst positioning and anything that sounds like a capability tour. This audience wrote a node-numbered specification with API contracts in it. They will respect a response that engages with <code>SYSTEM_UDF2</code> handling and the 30-day start-date rule, and they will discount one that does not.</p>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section id="s5">
+      <span class="secnum">Section 5</span>
+      <h2>POC Win Strategy</h2>
+      <p class="deck">How to win the evaluation without rebuilding the incumbent's application for them.</p>
+
+      <h3>What the POC must prove</h3>
+      <ol>
+        <li>Genesys completes the System Test-On happy path end to end, in English and Spanish, against the documented service contracts.</li>
+        <li>Genesys honors every eligibility rule exactly — active alarm, primary/secondary/unmonitored, fire-alarm codes, uncleared tests, date window — including the transfer outcomes.</li>
+        <li>Open-ended intent capture routes representative utterances correctly, including disambiguation of vague responses.</li>
+        <li>Transfer carries context to the agent, with the agreed fields and reason codes present on screen.</li>
+        <li>Error, no-input, no-match, invalid-DTMF, retry-exhaustion and API-failure paths behave to the documented thresholds.</li>
+        <li>Reporting comes out of the platform natively — intents, containment, transfers, API status, completion, split by language.</li>
+      </ol>
+
+      <h3>Where to be exceptional</h3>
+      <ul>
+        <li><strong>The exception paths.</strong> Anyone can demo a happy path. Show a caller whose site is in alarm, a caller with an FAONLY fire panel, a caller with an existing partial test, a caller requesting a start date 45 days out. Then show the agent receiving the call already knowing why. That is the demo the evaluation team will remember.</li>
+        <li><strong>Bilingual in one journey.</strong> Same rules, same integrations, same reporting, language as a dimension. Then show the change-once, applies-everywhere behavior when a rule changes.</li>
+        <li><strong>The transfer moment.</strong> The context contract is still To Be Determined in their document. Arrive with a proposed field set and show the screen pop working. Turning their open item into our artifact is worth more than a feature.</li>
+        <li><strong>Native reporting, live.</strong> Run the test scenarios, then open the analytics and show the outcomes without exporting anything.</li>
+      </ul>
+
+      <h3>Table stakes — meet these precisely and move on</h3>
+      <p>Inbound call entry with DNIS, ANI and hours-of-operation metadata; FAQ announcements with repeat, new task and close; agent-request containment at the documented thresholds; speech-first with defined DTMF error handling; confirmation before submission; the documented error counters and five-second timeouts with barge-in. Match the numbers, state that you matched them, spend no demo time on them.</p>
+
+      <h3>How to avoid rebuilding Omilia</h3>
+      <div class="callout">
+        <span class="label">Framing to use throughout the response</span>
+        <p>"We built to the business requirements in your specification, not to its implementation. Here is a traceability matrix from your reference nodes to our design, and here is where we did it in fewer moving parts." That single artifact lets a technical reviewer verify parity without forcing us into their structure — and it makes our simplification visible instead of suspicious. <span class="pill p-sa">SA recommendation</span></p>
+      </div>
+      <ul>
+        <li>Do not adopt miniApp vocabulary or node numbering in our design. Map to it once, in the matrix.</li>
+        <li>Do not reproduce the per-node prompt matrix. Show fewer authored artifacts as a stated improvement, with the same coverage.</li>
+        <li>Do not accept the ID&amp;V ladder as fixed. Propose a shorter path, keep the current one as the fallback, let JCI choose.</li>
+        <li>Do state clearly which requirements we support as configured, which need design work, and which we recommend doing differently — §14 explicitly asks for this and most vendors will answer it defensively. Answering it honestly is a differentiator.</li>
+      </ul>
+
+      <h3>What to defer rather than over-engineer</h3>
+      <ul>
+        <li><strong>Outbound and digital:</strong> demonstrate capability, do not build campaigns or channels into the POC. The document permits describe-or-demonstrate. Take it.</li>
+        <li><strong>FAQ breadth:</strong> a representative handful proves the pattern. The full intent list is not even in the document.</li>
+        <li><strong>Production hardening:</strong> security certification, DR, performance tuning and the support model are explicitly out of scope (§3). Address them in a production-readiness section, not in the build.</li>
+        <li><strong>Prompt polish and voice selection:</strong> agree persona traits, defer final wording and voice choice. Do not burn POC hours on audio production.</li>
+        <li><strong>Technician journeys and additional self-services:</strong> out of scope. Note them as roadmap, resist scope drift.</li>
+      </ul>
+
+      <h3>Evidence that strengthens a production decision</h3>
+      <ul>
+        <li>Intent accuracy measured on a JCI-supplied utterance set, reported per language.</li>
+        <li>Test-On completion rate across happy path and each exception branch, with transfer reasons.</li>
+        <li>Configuration change effort: time to add a rule, a prompt and a language, measured during the POC rather than asserted.</li>
+        <li>A production-readiness plan with the security, monitoring, scaling and change-management items §15 asks for.</li>
+        <li>A defensible effort and commercial view for both POC and production rollout — §15 requires it, and vagueness here reads as risk.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section id="s6">
+      <span class="secnum">Section 6</span>
+      <h2>Risks, Gaps, and Watch Items</h2>
+      <p class="deck">Prioritized. Every High item carries a mitigation or a validation step.</p>
+
+      <div class="legend">
+        <span><span class="pill p-high">High</span> address before or during the AE conversation</span>
+        <span><span class="pill p-med">Medium</span> manage during POC planning</span>
+        <span><span class="pill p-low">Low</span> monitor</span>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <caption>Risk register — Johnson Controls conversational voice POC</caption>
+          <thead>
+            <tr><th style="width:96px">Priority</th><th>Risk or gap</th><th>Why it matters</th><th>Mitigation / next step</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="nowrap"><span class="pill p-high">High</span></td>
+              <td><strong>Architecture is undecided</strong> — bot behind NICE versus Genesys as the voice front door</td>
+              <td>Determines POC effort, integration design, competitive frame and the commercial ceiling. The document assumes the former.</td>
+              <td>SA and AE decide the proposed architecture before any customer conversation. Prepare both, lead with one. Validate the coexistence transfer pattern and licensing implications internally first.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-high">High</span></td>
+              <td><strong>All eight APIs undefined</strong> — no URLs, placeholder credentials, no test data</td>
+              <td>The build cannot start. Any date we quote is exposed. §13 assumes availability before build begins, which is an assumption, not a commitment.</td>
+              <td>Propose a mock service layer mirroring the documented contracts so build begins on day one; make live-endpoint access a dated, named JCI dependency in our delivery plan.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-high">High</span></td>
+              <td><strong>Bilingual capability not yet verified</strong> against our current stack</td>
+              <td>It is a stated acceptance criterion in its own right, plus per-language reporting. A wrong assumption here is a lost POC.</td>
+              <td>SA verifies Spanish recognition and synthesis locales, AVA language support and per-language reporting before the AE conversation. Do not commit until confirmed.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-high">High</span></td>
+              <td><strong>Test-On rule complexity is easy to underestimate</strong> — five sequential eligibility gates with branch-heavy outcomes</td>
+              <td>The highest-effort component and the one the evaluation scores hardest. Underscoping produces a thin demo or a slipped date.</td>
+              <td>Build a rule-decision table from baseline §4.3.4 before estimating. Treat exception coverage as core scope, not stretch.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-high">High</span></td>
+              <td><strong>PIC handling</strong> — spoken verification code, present in audio and returned in the context payload</td>
+              <td>Sensitive-data exposure across recording, transcript and the cross-platform contract. If JCI raises it after we propose, we look reactive.</td>
+              <td>Raise it first. Confirm current secure-collection and recording-redaction capabilities, then propose returning validity rather than the code itself. <span class="pill p-val">Validate</span></td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-high">High</span></td>
+              <td><strong>Success criteria carry no numbers</strong></td>
+              <td>Subjective scoring favors the incumbent and whoever most closely resembles the existing design.</td>
+              <td>Offer to co-author measurable criteria during POC planning. Frame it as protecting their investment decision.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>Omilia is the incumbent and wrote the requirements</td>
+              <td>The evaluation's vocabulary and structure are theirs. Familiarity reads as fit.</td>
+              <td>Traceability matrix plus explicit improvement claims. Compete on outcomes and maintainability, never disparage.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>NICE will defend the platform and can bundle its own automation</td>
+              <td>If JCI stays NICE-fronted, a single-vendor counter-argument is available to them at low friction.</td>
+              <td>Make the consolidation case on operational control, analytics and change velocity. AE to confirm NICE contract timing and relationship health.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>Transfer context contract still To Be Determined, <code>FailExitReason</code> values undefined</td>
+              <td>Screen pop is an acceptance criterion built on an unfinished contract.</td>
+              <td>Propose the field set and reason-code taxonomy as a POC deliverable.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>Scope creep from outbound, chat and SMS</td>
+              <td>Genuine POC scope is one voice journey. Breadth asks can quietly become build work.</td>
+              <td>Hold the demonstrate-or-describe line the document already permits. Put it in writing in the delivery plan.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>FAQ intent list referenced but absent; internal inconsistency about the number of in-scope self-services</td>
+              <td>Unbounded requirement hiding behind a cross-reference.</td>
+              <td>Request the list. Scope to a representative set with a stated assumption until we have it.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>No volumes, containment baseline, cost data or business case anywhere in the document</td>
+              <td>No basis for value framing or for sizing production.</td>
+              <td>AE to source in discovery. Do not build ROI on invented numbers.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-med">Medium</span></td>
+              <td>Site time zone as the basis for all captured dates and times</td>
+              <td>Silent-failure territory. Also affects the 30-day and five-minutes-in-the-past rules.</td>
+              <td>Confirm the authoritative time-zone source and test explicitly across zones.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-low">Low</span></td>
+              <td>Specific TTS voice named in the baseline</td>
+              <td>Perceived parity issue if a reviewer is attached to the current voice.</td>
+              <td>Agree persona traits; present voice options as a choice, not a constraint.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-low">Low</span></td>
+              <td>Document quality — duplicate numbering, orphaned cross-references, unresolved review comments</td>
+              <td>Signals a fast-assembled document and possible internal disagreement about scope.</td>
+              <td>Helpful, non-judgmental clarification requests. Do not point out the review comments to the customer.</td>
+            </tr>
+            <tr>
+              <td class="nowrap"><span class="pill p-low">Low</span></td>
+              <td>Production deployment explicitly excluded</td>
+              <td>A successful POC does not, by itself, create a purchase.</td>
+              <td>Get the production decision path and its criteria on the table during POC planning, not after.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section id="s7">
+      <span class="secnum">Section 7</span>
+      <h2>Questions for the Account Executive</h2>
+      <p class="deck">Internal only. These determine whether we invest, and how.</p>
+
+      <h4>Account and relationship</h4>
+      <ul>
+        <li>What is our history with Johnson Controls, and is there any existing Genesys footprint anywhere in the enterprise — any business unit, any region, any acquired entity?</li>
+        <li>How did this document reach us? Inbound request, competitive RFP, relationship, partner-led?</li>
+        <li>Who is Mario Navarro, and is he the evaluator, the author-on-behalf-of, or the incumbent's counterpart?</li>
+        <li>Do we know who else received this document?</li>
+      </ul>
+
+      <h4>Sponsorship and decision process</h4>
+      <ul>
+        <li>Who owns the business outcome, and who owns the platform decision? Are they the same person?</li>
+        <li>Is this a CX initiative, an IT consolidation initiative, or a cost exercise? The answer changes our entire narrative.</li>
+        <li>Is there a formal evaluation committee, scoring model or procurement process behind this?</li>
+        <li>Who has to say yes for a production purchase, and has that path ever been walked at JCI?</li>
+      </ul>
+
+      <h4>Why now</h4>
+      <ul>
+        <li>What triggered this? Contract renewal, a cost review, dissatisfaction, a new leader, a broader modernization program?</li>
+        <li>Why does a single self-service journey warrant a rebuild POC?</li>
+        <li>Where does Spanish come from — a specific market, a compliance requirement, a customer complaint, an executive request?</li>
+        <li>Is there a date anyone cares about? The document names none.</li>
+      </ul>
+
+      <h4>Competitive and incumbent</h4>
+      <ul>
+        <li>How healthy is the NICE relationship, and when does that contract come up?</li>
+        <li>Is Omilia still engaged, still delivering, still liked?</li>
+        <li>Is NICE proposing its own automation as the alternative to this POC?</li>
+        <li>Are Amazon, Google, Microsoft or a systems integrator in this conversation?</li>
+      </ul>
+
+      <h4>Commercial and strategy</h4>
+      <ul>
+        <li>Are we willing to invest SC and PS effort in a POC with no dated production decision attached?</li>
+        <li>Is the POC funded, or is it a free evaluation? What did we agree to, if anything?</li>
+        <li>What is the desired account outcome — self-service attach behind NICE, a beachhead, or a full platform displacement? Answer this before we design anything.</li>
+        <li>What is the realistic production footprint if we win, and does it justify the POC investment?</li>
+      </ul>
+
+      <h4>Politics</h4>
+      <ul>
+        <li>Is anyone at JCI professionally invested in the current implementation succeeding?</li>
+        <li>Is the alarm-monitoring business unit deciding on its own, or does enterprise IT have a veto?</li>
+        <li>Any known preference, prior evaluation or bad history with Genesys we should know about?</li>
+      </ul>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section id="s8">
+      <span class="secnum">Section 8</span>
+      <h2>Customer Discovery Questions</h2>
+      <p class="deck">Prioritized to the questions that would change solution design, POC scope, effort or win strategy.</p>
+
+      <h3>Business and success criteria</h3>
+      <ul>
+        <li>What does success look like six months after production — a number, not a description?</li>
+        <li>What are today's call volumes into this front door, what share is Test-On, and what is current containment?</li>
+        <li>What does an agent-handled Test-On call cost you today, in handle time or in dollars?</li>
+        <li>What is driving this evaluation now, and what happens if you do nothing?</li>
+        <li>How will the POC be scored, and by whom?</li>
+      </ul>
+
+      <h3>Architecture and integration</h3>
+      <ul>
+        <li>Is the contact center platform decision settled for this initiative, or is it in scope?</li>
+        <li>Do you want the vendor to answer the call, or to receive it from the existing platform?</li>
+        <li>Are the services in section 4.3 built and available in non-production today, or do they need to be built?</li>
+        <li>Confirm the token model: OAuth client credentials, token lifetime, refresh behavior, rate limits.</li>
+        <li>What are acceptable API response times, and what should the caller experience when a service is slow rather than failed?</li>
+        <li>Which fields must reach the agent desktop, and where does screen pop render today?</li>
+      </ul>
+
+      <h3>Conversational AI, identification and authorization</h3>
+      <ul>
+        <li>Is the four-value identification sequence a compliance requirement or an accumulated design? Would you accept fewer turns for the same confidence?</li>
+        <li>Is the PIC the only authorization factor for placing a system on test, and who issues it?</li>
+        <li>Can we see the FAQ intent list and, more valuable, real caller utterances or recordings from the open question?</li>
+        <li>Is disambiguation currently a problem area? Which intents get confused?</li>
+        <li>For Spanish: which locales, what share of callers, and is language chosen by the caller or determined by routing?</li>
+        <li>Are the error thresholds and the two-agent-request limit deliberate policy or inherited defaults?</li>
+      </ul>
+
+      <h3>Business rules</h3>
+      <ul>
+        <li>Confirm the fire-alarm code handling in <code>SYSTEM_UDF2</code> is complete and current. Are there codes not in the list?</li>
+        <li>Confirm the transfer-on-more-than-five-systems rule and the primary/secondary/unmonitored decision table.</li>
+        <li>Is the 30-day forward window and the five-minutes-in-the-past tolerance still correct?</li>
+        <li>What is the authoritative source for site time zone, and how is daylight saving handled?</li>
+        <li>Who approves changes to these rules, and how often do they change?</li>
+      </ul>
+
+      <h3>Operations and reporting</h3>
+      <ul>
+        <li>Who watches this application day to day, and what do they look at?</li>
+        <li>What reporting exists today, how is it assembled, and what can you not see that you wish you could?</li>
+        <li>Who makes prompt and rule changes today, how long does a change take, and how many are queued?</li>
+        <li>What per-language reporting do you actually need — volume, containment, accuracy, all three?</li>
+      </ul>
+
+      <h3>Security and compliance</h3>
+      <ul>
+        <li>What are your requirements for recording, retention and redaction on calls containing a PIC?</li>
+        <li>Any regulatory or insurance obligations specific to alarm test records and audit trail?</li>
+        <li>What is required for a vendor to hold credentials to these services — review, scanning, certification?</li>
+        <li>Data residency requirements for voice, transcripts and interaction data?</li>
+      </ul>
+
+      <h3>POC delivery</h3>
+      <ul>
+        <li>What is your target POC start and end, and what is the date behind those dates?</li>
+        <li>Who is assigned from JCI for API access, business-rule approval and testing, and what is their availability?</li>
+        <li>Is a mock service layer acceptable for the build phase if live endpoints lag?</li>
+        <li>Who attends the final POC review, and what will convince them?</li>
+      </ul>
+
+      <h3>Production roadmap</h3>
+      <ul>
+        <li>If the POC succeeds, what is the decision process and timeline for production?</li>
+        <li>What comes after Test-On — Test-Off, technician journeys, other self-services?</li>
+        <li>Is the intent eventually to consolidate voice and digital on one platform?</li>
+        <li>How many agents, sites and countries are in the eventual footprint?</li>
+      </ul>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section id="s9">
+      <span class="secnum">Section 9</span>
+      <h2>Recommended AE Conversation Plan</h2>
+      <p class="deck">A usable talk track for a 20-minute internal call. Outcome: two decisions and one owner list.</p>
+
+      <h3>Opening statement</h3>
+      <div class="quote">
+        <p>"I've been through the whole document. Two things stand out before we talk about the POC itself.</p>
+        <p>First, this is an Omilia design specification with the branding taken out — their terminology, their node numbers, their diagrams, and a couple of review comments they forgot to delete. We're being asked to rebuild a working application against a spec written by the people who built it. That's not a problem, but it means parity gets us nowhere. We have to change what they're measuring.</p>
+        <p>Second, and this is the one I need your read on: a document about one voice self-service journey asks us about predictive dialing, campaign compliance, chat, SMS and operational dashboards. Nobody needs a dialer to put an alarm panel on test. Either someone at JCI is quietly comparing platforms, or someone is building an internal case. Which is it, and what do we want out of this account?"</p>
+      </div>
+
+      <h3>Discussion flow</h3>
+      <ul class="kv">
+        <li><span class="t">0–3 min</span><span>The two framing points above. Get the AE's reaction to the consolidation read.</span></li>
+        <li><span class="t">3–7 min</span><span>Account context: history, sponsor, origin of the request, why now, NICE contract timing, who else is bidding.</span></li>
+        <li><span class="t">7–11 min</span><span><strong>The architecture decision.</strong> Bot behind NICE versus Genesys as the front door. Lay out effort, ceiling and competitive frame for each. Decide, or agree what we need to know to decide.</span></li>
+        <li><span class="t">11–15 min</span><span>Delivery reality: no APIs, no test data, no dates, no numbers. Propose the mock-service approach and the dated-dependency list. Flag the Test-On rule complexity honestly.</span></li>
+        <li><span class="t">15–18 min</span><span>Win strategy in three sentences: exception paths, bilingual in one journey, native reporting — plus co-authored measurable success criteria.</span></li>
+        <li><span class="t">18–20 min</span><span>Investment: what we'll commit, what we need from the AE, what has to be true before we build anything. Assign owners and dates.</span></li>
+      </ul>
+
+      <h3>The talking points to land</h3>
+      <ol>
+        <li>We are responding to the incumbent's own design document. Parity is table stakes; the win is compression.</li>
+        <li>The architecture choice — behind NICE or in front of it — is the deal, and it is ours to propose.</li>
+        <li>Outbound and digital in a voice POC is the consolidation tell. It is also the only place a bot-only competitor has nothing to say.</li>
+        <li>Spanish is new capability for JCI, not parity. Everyone else will underscope it. I need to verify our support before we promise it.</li>
+        <li>No APIs, no test data, no dates. We solve that with a mock layer and a dated dependency list rather than a caveat.</li>
+        <li>Their acceptance criteria have no numbers. Co-authoring measurable ones is a service to them and it moves the scoring onto our ground.</li>
+        <li>Configuration migration is explicitly excluded. The incumbent's switching-cost argument is already gone — JCI removed it themselves.</li>
+      </ol>
+
+      <h3>Decisions to make together on this call</h3>
+      <ol>
+        <li><strong>Architecture posture.</strong> Do we propose Genesys as the voice front door, respond within the NICE-fronted frame, or present both with a recommendation?</li>
+        <li><strong>Investment level.</strong> Full SC build effort, or a scoped response with build contingent on a qualified production path?</li>
+        <li><strong>Scope discipline.</strong> Agree now that outbound and digital are demonstrated, not built.</li>
+        <li><strong>Deal team.</strong> Do we need PS input on effort, an AI specialist for AVA and bilingual, or a manager review before committing?</li>
+        <li><strong>Sequencing.</strong> Do we push for a discovery call before responding, or respond and use the response to earn the meeting?</li>
+      </ol>
+
+      <h3>Deliberately left open</h3>
+      <ul>
+        <li>Production sizing and commercial framing — no volumes exist yet.</li>
+        <li>Final ID&amp;V design — depends on whether the four-value sequence is compliance-driven.</li>
+        <li>POC timeline — cannot be committed before API availability is dated.</li>
+        <li>Whether Test-Off and technician journeys enter the conversation.</li>
+      </ul>
+
+      <div class="callout">
+        <span class="label">Desired outcome</span>
+        <p>Architecture posture chosen, investment level agreed, scope boundaries set, discovery questions assigned to the AE, and my validation list closed before we write a line of the response.</p>
+      </div>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section id="s10">
+      <span class="secnum">Section 10</span>
+      <h2>Immediate Next Actions</h2>
+      <p class="deck">Prioritized. Nothing here waits on the customer except where marked.</p>
+
+      <div class="tablewrap">
+        <table>
+          <caption>Action plan — sequenced by dependency, not by importance alone</caption>
+          <thead>
+            <tr><th>Action</th><th style="width:88px">Owner</th><th>Why it matters</th><th style="width:120px">Timing</th><th>Dependency / validation</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Verify Spanish recognition and synthesis locales, AVA language support, and per-language reporting granularity</td><td class="nowrap">SC</td><td>A stated acceptance criterion we cannot currently confirm. Highest-consequence unknown.</td><td class="nowrap">Now</td><td>Internal product confirmation before any customer statement</td></tr>
+            <tr><td>Decide architecture posture: Genesys front door, coexistence behind NICE, or both with a recommendation</td><td class="nowrap">AE + SC</td><td>Sets effort, licensing, competitive frame and commercial ceiling</td><td class="nowrap">Now</td><td>AE input on account outcome and NICE relationship</td></tr>
+            <tr><td>Build the Test-On rule decision table from baseline §4.3.4 before estimating anything</td><td class="nowrap">SC</td><td>The effort driver and the scoring driver. Estimating without it is guessing.</td><td class="nowrap">Now</td><td>None — document is sufficient</td></tr>
+            <tr><td>Confirm data action support for JCI's token and refresh pattern, plus timeout ceilings across five sequential gates</td><td class="nowrap">SC</td><td>Integration approach is a required response section</td><td class="nowrap">Now</td><td>Internal validation</td></tr>
+            <tr><td>Confirm secure-collection and recording-redaction options for the spoken PIC</td><td class="nowrap">SC</td><td>Lets us raise the sensitive-data issue first rather than answer it second</td><td class="nowrap">Now</td><td>Internal validation</td></tr>
+            <tr><td>Qualify the opportunity: sponsor, business case, decision process, timeline, competitive set, JCI Genesys footprint</td><td class="nowrap">AE</td><td>The document contains none of this. Investment decision depends on it.</td><td class="nowrap">Now</td><td>AE account knowledge and customer contact</td></tr>
+            <tr><td>Request the missing FAQ intent list, <code>FailExitReason</code> values, and confirmation of in-scope self-services</td><td class="nowrap">AE → Customer</td><td>Removes an unbounded requirement and creates a working contact</td><td class="nowrap">Before discovery</td><td>Customer response</td></tr>
+            <tr><td>Request non-production API access, credentials, endpoint documentation and test data with a committed date</td><td class="nowrap">AE → Customer</td><td>Critical path for the entire build</td><td class="nowrap">Before discovery</td><td>JCI IT</td></tr>
+            <tr><td>Design and stand up the mock service layer mirroring the documented contracts</td><td class="nowrap">SC</td><td>Decouples our schedule from JCI IT and demonstrates delivery maturity</td><td class="nowrap">POC planning</td><td>Rule decision table complete</td></tr>
+            <tr><td>Propose the transfer context field set and reason-code taxonomy</td><td class="nowrap">SC</td><td>Converts their open item into our deliverable</td><td class="nowrap">POC planning</td><td>Screen-pop requirements from JCI</td></tr>
+            <tr><td>Draft the requirement-to-design traceability matrix against their reference nodes</td><td class="nowrap">SC</td><td>Proves parity without adopting their implementation structure</td><td class="nowrap">POC planning</td><td>Architecture posture decided</td></tr>
+            <tr><td>Propose measurable POC success criteria for joint agreement</td><td class="nowrap">AE + SC</td><td>Moves scoring from impression to evidence</td><td class="nowrap">POC planning</td><td>Customer willingness</td></tr>
+            <tr><td>Confirm licensing and packaging for voice self-service, AVA consumption, outbound and digital under both architectures</td><td class="nowrap">SC + AE</td><td>Needed before any commercial or effort estimate leaves the building</td><td class="nowrap">POC planning</td><td>Internal — do not name SKUs to the customer until confirmed</td></tr>
+            <tr><td>Scope the exception-path demo scenarios: alarm active, fire-panel code, existing partial test, out-of-window date</td><td class="nowrap">SC</td><td>This is the demo that wins the room</td><td class="nowrap">POC planning</td><td>Rule table plus mock services</td></tr>
+            <tr><td>Build the production-readiness and effort view required by §15</td><td class="nowrap">SC + PS</td><td>Vagueness here reads as delivery risk</td><td class="nowrap">Later</td><td>POC scope frozen</td></tr>
+            <tr><td>Map the broader JCI footprint and additional stakeholders for a consolidation conversation</td><td class="nowrap">AE</td><td>Determines whether this is a beachhead or a one-off</td><td class="nowrap">Later</td><td>Qualification complete</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section id="s11">
+      <span class="secnum">Section 11</span>
+      <h2>Evidence and Validation Summary</h2>
+      <p class="deck">The conclusions this brief rests on, and what each one actually is.</p>
+
+      <div class="tablewrap">
+        <table>
+          <caption>Source classification for consequential conclusions</caption>
+          <thead>
+            <tr><th>Topic</th><th>Conclusion</th><th>Source</th><th style="width:132px">Classification</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Customer identity</td><td>Johnson Controls, alarm monitoring and central station operations</td><td>Baseline §4.2.6.1 greeting prompt; §4.4.2.13 closing prompt</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Incumbent stack</td><td>NICE Contact Center Platform for routing; Omilia Cloud Platform for conversational voice</td><td>Baseline §1, §5</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Baseline provenance</td><td>The current-state section is a de-branded Omilia design document, with unresolved review comments about neutralizing that terminology</td><td>Baseline §3.3.1 comments SA1 / MN1R2; Omilia node numbering and diagrams throughout</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>POC scope</td><td>One self-service journey — System Test-On — plus intent capture, FAQ, ID&amp;V, transfer, error handling, reporting, bilingual</td><td>POC SOW §2</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Platform-evaluation read</td><td>Outbound dialing and chat/SMS asks indicate a platform comparison rather than a voicebot POC</td><td>POC SOW §2, §7, §10, §12, §15 versus single in-scope journey</td><td><span class="pill p-sa">SA interpretation</span></td></tr>
+            <tr><td>Spanish as new scope</td><td>Bilingual is added capability; current state is US English only</td><td>Baseline Application Scope Overview; POC SOW §2, §9, §12</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>API readiness</td><td>All eight services carry undisclosed URLs and placeholder credentials</td><td>Baseline §4.2.7, §4.3.3, §4.3.4</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Critical-path risk</td><td>POC schedule is unquotable without a mock service layer</td><td>Derived from above plus POC SOW §13</td><td><span class="pill p-sa">SA interpretation</span></td></tr>
+            <tr><td>Verification factor</td><td>Identification uses non-secret account data; the PIC is the authorization factor</td><td>Baseline §4.3, §4.3.4.3</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Sensitive-data exposure</td><td>PIC is spoken and returned in the context payload to the contact center platform</td><td>Baseline §4.4.2.2, §5.3</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Test-On rule set</td><td>Five eligibility gates: active alarm, primary/secondary/unmonitored, fire-alarm code, uncleared tests, date window</td><td>Baseline §4.3.4.1–4.3.4.6</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Deterministic rule handling</td><td>Eligibility logic must remain deterministic and auditable, not model-driven</td><td>SA conclusion from rule structure and safety context</td><td><span class="pill p-sa">SA interpretation</span></td></tr>
+            <tr><td>Migration excluded</td><td>No historical data or incumbent configuration migration, removing the usual switching-cost argument</td><td>POC SOW §3</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Acceptance criteria</td><td>All eleven criteria are demonstration-based with no quantified thresholds</td><td>POC SOW §12</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Scoring bias</td><td>Unquantified criteria favor familiarity and therefore the incumbent</td><td>SA conclusion</td><td><span class="pill p-sa">SA interpretation</span></td></tr>
+            <tr><td>Bilingual platform support</td><td>Spanish locales, AVA language coverage, per-language reporting</td><td>Not established in the attachment; requires internal confirmation</td><td><span class="pill p-val">Validate</span></td></tr>
+            <tr><td>Outbound capability match</td><td>Current dialing modes, campaign management and compliance controls versus the stated requirement</td><td>Requires internal confirmation before positioning</td><td><span class="pill p-val">Validate</span></td></tr>
+            <tr><td>Licensing and packaging</td><td>Entitlements for voice self-service, AVA consumption, outbound and digital under both architectures</td><td>Not addressed in the attachment</td><td><span class="pill p-val">Validate</span></td></tr>
+            <tr><td>Secure data handling</td><td>Secure collection and recording redaction options for the spoken PIC</td><td>Requires internal confirmation</td><td><span class="pill p-val">Validate</span></td></tr>
+            <tr><td>Coexistence transfer pattern</td><td>Supported approach and implications for Genesys-fronted voice with transfer to NICE</td><td>Not addressed in the attachment</td><td><span class="pill p-val">Validate</span></td></tr>
+            <tr><td>Voice and persona parity</td><td>Available neural voice options comparable to the named current voice</td><td>Baseline §3.1 names the current voice only</td><td><span class="pill p-val">Validate</span></td></tr>
+            <tr><td>Business case</td><td>No volumes, containment baseline, cost or ROI data exists anywhere in the document</td><td>Absence across the attachment</td><td><span class="pill p-fact">Document fact</span></td></tr>
+            <tr><td>Sponsorship and process</td><td>No named sponsor, evaluation committee, timeline or competitive set</td><td>Absence across the attachment; document control names the author only</td><td><span class="pill p-fact">Document fact</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section id="s12">
+      <span class="secnum">Section 12</span>
+      <h2>Useful Extensions</h2>
+      <p class="deck">Secondary to the brief above, but worth the AE's attention.</p>
+
+      <h3>Adjacent self-service the document points at without asking for</h3>
+      <p>System Test-On implies System Test-Off, test extension and test status inquiry — the same site lookup, the same authorization, the same rule surface, and almost certainly the same callers. The baseline also references a technician-versus-customer caller distinction and a <code>testcat_id</code> value reserved for technician tests, which suggests a separate technician journey exists or is intended. None of this is in scope. All of it is cheap to add once the integration layer exists, and it is the natural second phase to put on the table when the production conversation starts.</p>
+
+      <h3>Digital as a better fit than voice for parts of this journey</h3>
+      <p>A technician standing at a panel scheduling a test window is a better candidate for SMS or web messaging than for a phone call — structured data entry, a written confirmation record, and an audit trail without transcription risk. The document asks us to recommend chat and SMS use cases; this is the recommendation, and it is more credible than a generic channel list because it comes from their own workflow.</p>
+
+      <h3>Platform consolidation implications</h3>
+      <p>If this business unit runs NICE plus Omilia, the AE should establish what the rest of Johnson Controls runs. A global enterprise with an alarm-monitoring central station operation almost certainly has other contact center estates — field service dispatch, building solutions support, regional operations. A single-journey POC in one business unit is either a narrow project or the visible edge of a much larger estate. Worth knowing which before deciding how much to invest. <span class="pill p-val">AE to map</span></p>
+
+      <h3>Measurement as a product of the POC</h3>
+      <p>Beyond passing acceptance criteria, the POC can leave JCI with something they do not have today: a baseline. Intent distribution from real utterances, containment by intent, exception frequency by rule, per-language performance. If we produce that, we are not a vendor who passed a test — we are the vendor who showed them their own operation. That is also the artifact most likely to survive into an internal business case we never see.</p>
+
+      <h3>Stakeholders the AE may need beyond the author</h3>
+      <ul>
+        <li>The central station operations leader who owns handle time and agent capacity.</li>
+        <li>The IT or enterprise architecture owner of the NICE relationship.</li>
+        <li>Security and compliance, given PIC handling, recording and alarm-test audit records.</li>
+        <li>Whoever owns the Spanish-language requirement — they are a sponsor we have not identified.</li>
+        <li>Procurement, if this is heading toward a formal evaluation rather than a technical POC.</li>
+      </ul>
+
+      <h3>One more thing to watch</h3>
+      <div class="callout note">
+        <span class="label">Watch item</span>
+        <p>The review comment in the baseline about not having the original diagrams, and about an AI tool burning time trying to recreate them, tells us the team preparing this evaluation is stretched. That is an opening. A vendor who reduces their workload — proposes the context contract, supplies the reason-code taxonomy, drafts measurable criteria, brings the mock services — becomes easy to work with at exactly the moment they need that. Do not mention the comment. Just be that vendor.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="docfoot">
+  <p><strong>Genesys internal use only.</strong> Prepared from POC Statement of Work and Current-State Technical Baseline v0.3, dated 08/05/2026. Not for distribution to Johnson Controls or any third party.</p>
+  <p>Conclusions labeled <em>SA interpretation</em> are professional judgment, not customer-stated fact. Items labeled <em>Validate</em> must be confirmed internally before being asserted to the customer.</p>
+</footer>
+
+<script>
+(function(){
+  try{
+    var links = Array.prototype.slice.call(document.querySelectorAll('.jump a[href^="#s"]'));
+    var map = {};
+    links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+    var sections = Array.prototype.slice.call(document.querySelectorAll('main section'));
+    if(!('IntersectionObserver' in window) || !sections.length) return;
+    var visible = {};
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ visible[e.target.id] = e.isIntersecting; });
+      var current = null;
+      for(var i=0;i<sections.length;i++){
+        if(visible[sections[i].id]){ current = sections[i].id; break; }
+      }
+      links.forEach(function(a){ a.classList.remove('active'); });
+      if(current && map[current]) map[current].classList.add('active');
+    }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+    sections.forEach(function(s){ obs.observe(s); });
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
