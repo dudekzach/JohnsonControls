@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCI — Demo Strategy &amp; Talk Tracks</title>
+<style>
+  :root{
+    --ink:#15191e; --ink-soft:#3c4650; --line:#d8dee5; --line-soft:#e8edf2;
+    --bg:#f5f7f9; --card:#fff; --accent:#0b4f9e; --accent-soft:#eaf1fa;
+    --high:#8f1d1d; --high-bg:#fbeeee; --med:#8a5a00; --med-bg:#fdf4e3;
+    --low:#1f5c3a; --low-bg:#eaf5ee; --say:#0d3d75; --say-bg:#eef4fa;
+    --val:#7a3d00; --val-bg:#fdf1e5;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;line-height:1.6;}
+  .wrap{max-width:1060px;margin:0 auto;padding:32px 24px 96px;}
+  header.doc{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--accent);
+    border-radius:6px;padding:28px 30px;margin-bottom:24px;}
+  header.doc h1{font-size:1.8rem;line-height:1.25;margin:0 0 8px;letter-spacing:-0.01em;}
+  header.doc .sub{font-size:1.05rem;color:var(--ink-soft);margin:0 0 18px;}
+  .metagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 24px;
+    border-top:1px solid var(--line-soft);padding-top:16px;font-size:0.95rem;}
+  .metagrid .k{display:block;text-transform:uppercase;letter-spacing:0.06em;font-size:0.72rem;color:#6b7681;font-weight:700;}
+  section.block{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:26px 30px;margin-bottom:22px;}
+  section.scene{border-left:5px solid var(--accent);}
+  h2{font-size:1.32rem;margin:0 0 4px;line-height:1.3;}
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;}
+  .h2sub{color:var(--ink-soft);font-size:0.98rem;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line-soft);}
+  h3{font-size:1.06rem;margin:24px 0 8px;}
+  h3:first-of-type{margin-top:4px;}
+  h4{font-size:0.85rem;margin:18px 0 6px;color:#5a6672;text-transform:uppercase;letter-spacing:0.06em;}
+  p{margin:0 0 14px;}
+  ul,ol{margin:0 0 14px;padding-left:22px;}
+  li{margin-bottom:7px;}
+  strong{font-weight:650;}
+  .tag{display:inline-block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+    padding:2px 8px;border-radius:3px;white-space:nowrap;vertical-align:1px;}
+  .t-gap{background:var(--high-bg);color:var(--high);border:1px solid #e2b6b6;}
+  .t-part{background:var(--med-bg);color:var(--med);border:1px solid #e8d3a3;}
+  .t-ok{background:var(--low-bg);color:var(--low);border:1px solid #bcdcc8;}
+  .t-val{background:var(--val-bg);color:var(--val);border:1px solid #e8c9a6;}
+  .callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:14px 18px;border-radius:0 4px 4px 0;margin:0 0 18px;}
+  .callout.warn{border-left-color:var(--high);background:var(--high-bg);}
+  .callout p:last-child{margin-bottom:0;}
+  .callout .label{display:block;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;color:var(--accent);}
+  .callout.warn .label{color:var(--high);}
+  .tablewrap{overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:5px;}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:0.92rem;}
+  caption{text-align:left;font-size:0.89rem;color:var(--ink-soft);padding:10px 12px;border-bottom:1px solid var(--line-soft);background:#fafbfc;}
+  th,td{padding:11px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft);line-height:1.5;}
+  thead th{background:#eef2f6;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:#4a5560;border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#fbfcfd;}
+  .say{background:var(--say-bg);border-left:3px solid #9db4cd;padding:12px 16px;margin:10px 0 14px;
+    border-radius:0 3px 3px 0;font-size:1rem;color:var(--say);}
+  .say b{display:block;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#5a6672;margin-bottom:5px;font-weight:700;}
+  .say p{margin:0 0 10px;}
+  .say p:last-child{margin-bottom:0;}
+  .show{background:#f7f9fa;border:1px dashed #c6cfd8;padding:10px 14px;margin:0 0 14px;
+    border-radius:4px;font-size:0.94rem;color:var(--ink-soft);}
+  .show b{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#5a6672;font-weight:700;margin-right:8px;}
+  ol.beats{counter-reset:b;list-style:none;padding-left:0;}
+  ol.beats > li{counter-increment:b;position:relative;padding-left:40px;margin-bottom:20px;}
+  ol.beats > li:before{content:counter(b);position:absolute;left:0;top:1px;width:26px;height:26px;
+    background:var(--accent);color:#fff;border-radius:50%;font-size:0.78rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center;}
+  ol.beats > li > .bt{font-weight:650;display:block;margin-bottom:6px;}
+  .chain{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:0.95rem;
+    background:#f8fafc;border:1px solid var(--line);border-radius:5px;padding:15px 17px;margin:0 0 18px;}
+  .chain dt{font-weight:650;color:var(--ink-soft);white-space:nowrap;}
+  .chain dd{margin:0;}
+  .obj{border:1px solid var(--line);border-radius:5px;padding:14px 16px;margin:0 0 14px;background:#fcfdfe;}
+  .obj h4{margin:0 0 8px;text-transform:none;letter-spacing:0;color:var(--ink);font-size:1rem;font-weight:650;}
+  footer.doc{margin-top:8px;padding:22px 30px;background:var(--card);border:1px solid var(--line);
+    border-radius:6px;font-size:0.92rem;color:var(--ink-soft);}
+  footer.doc h3{margin-top:0;font-size:1rem;color:var(--ink);}
+  @media (max-width:640px){
+    body{font-size:16px;} .wrap{padding:18px 12px 60px;}
+    section.block,header.doc{padding:20px 16px;} header.doc h1{font-size:1.4rem;}
+    .chain{grid-template-columns:1fr;gap:2px;} .chain dt{margin-top:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <h1>Johnson Controls — Demo Strategy &amp; Talk Tracks</h1>
+  <p class="sub">DSP-structured demo plan with deliverable talk tracks, value hypothesis, MEDDPICC status, and mutual action plan. Built for the SC to deliver inside the testing and knowledge-transfer window.</p>
+  <div class="metagrid">
+    <div><span class="k">Deliver in</span><span class="v">Week of the 14th — testing, knowledge transfer, and the demo/sales-team session</span></div>
+    <div><span class="k">Scenes</span><span class="v">Outbound notification · Agent Copilot on exception · Knowledge as recommendation</span></div>
+    <div><span class="k">Register</span><span class="v">Capability demonstration inside a delivery context, not a pitch</span></div>
+    <div><span class="k">Primary objective</span><span class="v">Convert a successful POC into a funded production conversation</span></div>
+  </div>
+</header>
+
+<!-- 1 DSP -->
+<section class="block">
+  <h2><span class="num">1.</span> DSP Foundation</h2>
+  <p class="h2sub">Everything downstream traces to this. Built from JCI's own statements across four working sessions and both data workbooks.</p>
+
+  <h3>Customer objectives and the metrics that matter</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:30%">Objective (JCI's words)</th><th style="width:24%">Metric that matters</th><th>Current position</th></tr></thead>
+      <tbody>
+        <tr><td>Reduce human-to-human handling on System Test-On and the cost attached to it</td><td>Containment rate on Test-On</td><td>~20% after roughly two years on the incumbent system. Mario's stated figure.</td></tr>
+        <tr><td>Design for customer adoption and an effective caller journey, not only technical correctness</td><td>Task completion rate; caller effort; abandonment</td><td>Not measured today. Mario asked Genesys explicitly to bring lessons from other customers on this.</td></tr>
+        <tr><td>Handle the calls automation correctly refuses without making the caller start again</td><td>AHT on transferred Test-On calls; re-identification rate</td><td>Not measured. <span class="tag t-val">to-verify</span></td></tr>
+        <tr><td>Extend automation beyond the first journey without a vendor engagement for every change</td><td>Elapsed time and cost per prompt, intent, or rule change</td><td>Vendor-mediated today. The SOW author could not regenerate his own flow diagram without the incumbent's source file.</td></tr>
+        <tr><td>Understand what one platform can deliver across voice, digital, and outbound</td><td>Number of vendors required to satisfy the SOW</td><td>Two today, joined by SIP and a data payload.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>The volume anchor:</strong> roughly 70% of the business unit's call volume is System Test-On. That single number is why this narrow journey carries a real business case. <span class="tag t-val">to-verify</span> — total annual call volume, AHT, and fully loaded cost per contact are all still unknown, so absolute savings cannot yet be stated.</p>
+
+  <h3>Top challenges</h3>
+  <ul>
+    <li><strong>Containment has plateaued at roughly a fifth of eligible traffic</strong> after two years. The problem is not that automation was attempted; it is that it stopped improving.</li>
+    <li><strong>The caller journey is slot-by-slot.</strong> The current design asks for central station number, then account phone, then street number, then postal code, then a spelled PIC, then start date, then start time, then end date, then end time, then name — each its own turn with its own error ladder.</li>
+    <li><strong>Callers are asked to state a sensitive identifier out loud</strong> because address-based disambiguation was not available in the current design.</li>
+    <li><strong>Failure and refusal are handled as errors rather than as outcomes.</strong> A caller who cannot place a test lands on an agent with no context.</li>
+    <li><strong>Change is slow and externally owned</strong>, which is why the intent set and FAQ inventory have not grown.</li>
+    <li><strong>Operational consequence sits outside the contact center.</strong> A system not placed on test generates alarm activity and downstream dispatch cost. <span class="tag t-val">to-verify</span> — JCI has not supplied a false-dispatch volume or cost.</li>
+  </ul>
+
+  <h3>Differentiators, tied to this situation</h3>
+  <ul>
+    <li><strong>One platform across the whole SOW.</strong> Self-service, routing, agent desktop, outbound, and digital on one interaction record. The incumbent conversational vendor cannot answer the outbound section of JCI's own document.</li>
+    <li><strong>JCI owns the change.</strong> Prompts, intents, knowledge, and rules administered by JCI in Genesys Cloud CX rather than through a vendor ticket.</li>
+    <li><strong>Agent-side value they did not ask for.</strong> Context, transcript, summary, and next-step guidance on the transfers the design deliberately creates.</li>
+    <li><strong>Deterministic rules, conversational surface.</strong> Eligibility decisions execute as explicit logic in Genesys Cloud Architect, not as model judgement — which is the right answer in a life-safety function.</li>
+    <li><strong>Design judgement in a safety context.</strong> Refusing to automate combo and HVAC until standalone flows validate; transferring on an active alarm; securing the PIC; a professional rather than cheerful voice. Presented as a set, this is a credibility asset.</li>
+  </ul>
+
+  <h3>Key takeaways — the four-layer story</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:16%">Layer</th><th>The line</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Why change</strong></td><td>Twenty percent containment on a journey that is seventy percent of your volume means four out of five callers on your highest-volume task still reach a person. Two years of the current approach moved it this far and stopped.</td></tr>
+        <tr><td><strong>Why now</strong></td><td>The POC gave you a working answer in four weeks. The question in front of you is no longer whether it can be built — it is how fast you can extend it, and who has to be involved every time you do. <span class="tag t-val">to-verify</span> — no contract event or executive mandate has been confirmed, so this layer is currently weaker than it should be. See MEDDPICC.</td></tr>
+        <tr><td><strong>Why Genesys</strong></td><td>Your own SOW asks one vendor for self-service, agent handling, outbound dialing, and digital channels. We answered all four in the same tenant. Your current conversational vendor can answer one of them.</td></tr>
+        <tr><td><strong>Why you</strong></td><td>Per persona, in §4. The operator stops re-asking. The supervisor can finally see the whole journey. The administrator changes an answer in minutes. Operations gets a way to prevent the call.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 2 MEDDPICC -->
+<section class="block">
+  <h2><span class="num">2.</span> MEDDPICC Status</h2>
+  <p class="h2sub">Gaps flagged explicitly rather than skipped. Four sessions of technical engagement have not moved the commercial fields.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:16%">Field</th><th style="width:12%">Status</th><th>Position and what is missing</th></tr></thead>
+      <tbody>
+        <tr><td><strong>M</strong> — Metrics</td><td><span class="tag t-part">Partial</span></td><td>Have: ~70% of BU volume is Test-On; ~20% current containment. Missing: annual call volume, AHT, cost per contact, false-dispatch volume and cost, target containment, and the combo/HVAC share of the base needed to interpret POC results.</td></tr>
+        <tr><td><strong>E</strong> — Economic Buyer</td><td><span class="tag t-gap">Gap</span></td><td>Not identified. Nobody in four sessions has behaved like a buyer. Mario owns product and technology for the global contact center and is directive on design, but stepped back to a backup role on the POC. Highest-priority gap in the opportunity.</td></tr>
+        <tr><td><strong>D</strong> — Decision Criteria</td><td><span class="tag t-ok">Known</span></td><td>Mario stated five: execution speed, customer journey, intuitiveness, containment versus agent routing, and success rate on qualifying alarms. He also invited Genesys to define what acceptable, good, and excellent look like in the schedule — an unusual and useful opening.</td></tr>
+        <tr><td><strong>D</strong> — Decision Process</td><td><span class="tag t-gap">Gap</span></td><td>Unknown beyond the readout. No stated path from POC acceptance to a production decision, no committee, no timeline.</td></tr>
+        <tr><td><strong>P</strong> — Paper Process</td><td><span class="tag t-gap">Gap</span></td><td>Unknown. No procurement, legal, or security gate has been named. Given the life-safety function, a security review is near-certain and has not been scoped.</td></tr>
+        <tr><td><strong>I</strong> — Implicated Pain</td><td><span class="tag t-part">Partial</span></td><td>The plateau at 20% containment is real implicated pain. What is missing is urgency: no contract event, no leadership mandate, no deadline. Without it, a successful POC can sit.</td></tr>
+        <tr><td><strong>C</strong> — Champion</td><td><span class="tag t-part">Partial</span></td><td>Mario is the closest thing and has been genuinely constructive — he directed the team away from reproducing the incumbent design. But he is not confirmed as having access to a buyer, and primary contact has moved to Miguel and Ulysses. Miguel was not involved in creating the POC document and is explicitly comparing vendors.</td></tr>
+        <tr><td><strong>C</strong> — Competition</td><td><span class="tag t-part">Partial</span></td><td>JCI confirmed other vendors are being evaluated in parallel; identities unknown. Incumbents: the contact center platform and the conversational vendor. Expect the incumbent CCaaS argument that swapping only the bot is the low-risk path.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="label">What this means for the demos</span>
+    <p>Three of eight fields are hard gaps and all three are commercial. The demos therefore have a second job beyond showing capability: <strong>each one is designed to surface a MEDDPICC gap through a question the demo makes natural to ask.</strong> Those questions are marked in each talk track. Do not skip them — they are the reason the scene earns its slot.</p>
+  </div>
+</section>
+
+<!-- 3 Value hypothesis -->
+<section class="block">
+  <h2><span class="num">3.</span> Value Hypothesis</h2>
+  <p class="h2sub">Ranges, not point estimates. Every assumption labelled. Nothing here should be shown to JCI as a number until they supply the baselines.</p>
+  <div class="tablewrap">
+    <table>
+      <caption>Directional ranges only. Owners and measurement methods are proposed, not agreed.</caption>
+      <thead><tr><th style="width:19%">Outcome</th><th style="width:11%">Baseline</th><th style="width:11%">@90 days</th><th style="width:11%">@180 days</th><th style="width:19%">Mechanism</th><th>Measurement / owner</th></tr></thead>
+      <tbody>
+        <tr><td>Test-On containment, in-scope band</td><td>~20% all-traffic (stated)</td><td>+8–12 pts</td><td>+12–20 pts</td><td>Multi-value capture, address-based disambiguation, fewer turns to submission, deterministic eligibility</td><td>Architect Flow Outcomes. Owner: JCI contact center ops. <span class="tag t-val">to-verify</span> baseline definition</td></tr>
+        <tr><td>Test-On containment, all traffic</td><td>~20% (stated)</td><td>No change assumed</td><td>+10–18 pts once combo, partial, and Test-Off automate</td><td>Phase-two scope expansion, not platform change</td><td>Flow Outcomes plus wrap codes. <span class="tag t-val">to-verify</span> combo/HVAC share of base — this range is unreliable without it</td></tr>
+        <tr><td>AHT on transferred Test-On calls</td><td>Unknown</td><td>−5–10%</td><td>−10–15%</td><td>Screen pop, transcript, summary, and Genesys Agent Copilot next-step on exception transfers</td><td>Queue and agent performance views. <span class="tag t-val">to-verify</span> current AHT</td></tr>
+        <tr><td>Caller re-identification on transfer</td><td>Assumed near-universal</td><td>Substantially eliminated for identified callers</td><td>Sustained</td><td>Participant data carried on the same interaction record</td><td>Agent-reported context quality; interaction review</td></tr>
+        <tr><td>Elapsed time per content change</td><td>Vendor-mediated (days to weeks)</td><td>Same-day</td><td>Same-day, JCI-administered</td><td>Genesys Cloud Knowledge and Architect administered by JCI</td><td>Timed during knowledge transfer. Owner: JCI IT</td></tr>
+        <tr><td>Inbound Test-On contacts deflected by proactive notification</td><td>Zero (no outbound today for this)</td><td>Pilot only</td><td>Directional, scope-dependent</td><td>Genesys Cloud Outbound agentless notification before test-window expiry</td><td>Campaign performance versus inbound volume. <span class="tag t-val">to-verify</span> expiring-window volume</td></tr>
+        <tr><td>Unnecessary alarm activity from systems not placed on test</td><td>Unknown</td><td>Not claimable</td><td>Directional</td><td>Higher containment plus proactive notification</td><td><span class="tag t-val">to-verify</span> — JCI has supplied no false-dispatch data. Do not quantify this until they do.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Stated assumptions:</strong> containment ranges assume the automated band remains as scoped and that call mix is broadly stable. AHT ranges assume the agent population handling transfers is the same population today. The all-traffic containment range is the least reliable figure in this table and should carry that caveat every time it is used. Ranges are drawn from comparable self-service and agent-assist deployments, not from JCI data.</p>
+</section>
+
+<!-- 4 Storyboard -->
+<section class="block">
+  <h2><span class="num">4.</span> Demo Storyboard</h2>
+  <p class="h2sub">Persona, focus, and the metric each scene moves. Three scenes deliver; the fourth is held.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:15%">Persona</th><th style="width:22%">Scene</th><th style="width:17%">Metric moved</th><th>Why this matters to the person in the room</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Operations leadership</strong></td><td>Scene A — Outbound proactive notification</td><td>Inbound deflection; unnecessary alarm activity</td><td>The cheapest call to handle is the one that never happens. This is the only scene that prevents demand rather than absorbing it.</td></tr>
+        <tr><td><strong>Central station operator</strong></td><td>Scene B — Copilot on the exception transfer</td><td>AHT on transferred calls; re-identification</td><td>The transfers this design creates on purpose land with full context and a suggested next step instead of a blank screen.</td></tr>
+        <tr><td><strong>Supervisor / manager</strong></td><td>Scene B, second half — monitoring views</td><td>Containment visibility; outcome reporting</td><td>One view of the journey from arrival to resolution. Mario asked specifically for supervisor and manager views in knowledge transfer.</td></tr>
+        <tr><td><strong>Administrator / IT (Miguel, Ulysses)</strong></td><td>Scene C — Knowledge and the timed change</td><td>Elapsed time and cost per change</td><td>They will own this after handover. Whether they can change it themselves determines whether automation keeps growing.</td></tr>
+        <tr><td><strong>Caller (technician, facilities)</strong></td><td>Woven through the POC journey itself</td><td>Containment; task completion</td><td>Owned by ProServices in the POC. Do not rebuild it — reference it.</td></tr>
+        <tr><td><strong>Held</strong></td><td>Speech and Text Analytics</td><td>Phase-two journey selection</td><td>Mario said normal call data is sufficient and advanced journey analysis is not required. No scoring weight. Hold for the production conversation.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SCENE A -->
+<section class="block scene">
+  <h2>Scene A — Outbound: Prevent the Call</h2>
+  <p class="h2sub">15 minutes · Operations leadership, the outbound owner, Ulysses and Miguel · Deliver in the demo/sales-team session</p>
+
+  <div class="chain">
+    <dt>Objective</dt><dd>Prevent the operational failure that inbound self-service exists to absorb</dd>
+    <dt>Metric</dt><dd>Expiring test windows extended without an inbound call; inbound Test-On deflection; unnecessary alarm activity</dd>
+    <dt>Capability</dt><dd>Genesys Cloud Outbound — agentless notification, with preview and predictive modes shown for completeness</dd>
+    <dt>Outcome</dt><dd>Outbound stops being a capability checkbox and becomes the second half of the same business case</dd>
+  </div>
+
+  <p><strong>Why this scene goes first:</strong> JCI took the dialer question away on 24 August to form an internal view and has not come back. A recommendation lands far better before their opinion sets than after. It is also the one requirement in JCI's own SOW that the incumbent conversational vendor cannot answer at all.</p>
+
+  <h3>Talk track</h3>
+  <ol class="beats">
+    <li><span class="bt">Open on the problem, not the product</span>
+      <div class="say"><b>Say</b>
+        <p>"Before I show you anything, I want to check I understand something. A test window expires at a site and nobody extends it. The technician is still working. What actually happens next in your world?"</p>
+        <p>[Let them answer. They will describe the alarm activity and the dispatch consequence better than you can.]</p>
+        <p>"Right. So everything we've built over the last four weeks is about handling that call well. This next part is about not needing the call."</p>
+      </div>
+      <div class="show"><b>Show</b>Nothing yet. Screen stays on the problem.</div>
+    </li>
+
+    <li><span class="bt">Controls before dialing</span>
+      <div class="say"><b>Say</b>
+        <p>"I'm going to start with the boring part on purpose, because in your business it's the part that matters. Before anything gets dialled, this decides who is allowed to be contacted."</p>
+      </div>
+      <div class="show"><b>Show</b>Contact list, list filters, contactable time sets with local-time-zone mapping, DNC list assignment, attempt controls per contact and per number.</div>
+      <div class="say"><b>Say</b>
+        <p>"Contactable time sets mean you're calling inside the contact's local window, not yours. Attempt controls cap how often the same contact and the same number can be tried. A do-not-contact match removes the record from selection entirely. And a wrap-up code can mark a number — or the whole contact — uncallable from then on."</p>
+        <p>"These are controls, not compliance. Your compliance function decides which of them have to be switched on and how. I'm not going to tell you that a configuration satisfies a regulation — I don't know your consent posture or your contact population. I'd rather have that conversation with the person who owns it."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">The recommended use case, live</span>
+      <div class="say"><b>Say</b>
+        <p>"Here's what I'd actually recommend you do first. An agentless campaign — no agent reserved, no queue consumed. It calls the authorised contact before the window closes and offers to continue or extend."</p>
+      </div>
+      <div class="show"><b>Show</b>Agentless campaign configuration, Call Analysis Responses, the Architect outbound flow handling a live answer versus an answering machine. Run it. Show the result recorded against the contact.</div>
+      <div class="say"><b>Say</b>
+        <p>"That call cost you no agent time. And if the contact says yes, the inbound call you would otherwise have handled never happens."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Answer the dialer question properly, then move on</span>
+      <div class="say"><b>Say</b>
+        <p>"You asked us to come back with a view on dialer scope, so let me be complete rather than clever about it."</p>
+      </div>
+      <div class="show"><b>Show</b>Briefly: preview mode presenting record and script before the call; predictive pacing configuration including compliance abandon rate; manual dial from Agent Workspace on behalf of a queue.</div>
+      <div class="say"><b>Say</b>
+        <p>"Preview is where an operator sees the record and the script and decides. Predictive is for volume — it paces from your actual agent behaviour and you control the compliance abandon rate. And an operator can place a call on behalf of a queue so the statistics and the after-call work stay with the right business queue rather than disappearing into an individual's numbers."</p>
+        <p>"My recommendation is you start with the agentless notification. It needs no agent capacity, it's the lowest-risk thing on this list, and it targets the same cost as the journey we just built. The other two are there when you want them."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Land it on the reporting point</span>
+      <div class="show"><b>Show</b>Campaign Performance alongside the inbound flow outcome reporting. Same analytics framework, same interaction attributes.</div>
+      <div class="say"><b>Say</b>
+        <p>"Last thing. The campaign results and the inbound Test-On results are in the same reporting, on the same platform, against the same contacts. So you can actually answer the question 'did the notification reduce the calls' — instead of comparing two vendors' exports and hoping."</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3>The pivot — say this before you leave the scene</h3>
+  <div class="say"><b>Say</b>
+    <p>"One observation, and then I'll stop. Your SOW asks a single vendor about self-service, agent handling, outbound dialling and digital channels. We've now shown you all four in the same tenant. Your current conversational platform can answer one of them. That's not a criticism of them — it's a question about how many platforms this needs to be."</p>
+  </div>
+
+  <h3>Discovery to extract here</h3>
+  <ul>
+    <li>How many test windows expire without extension in a month, and what does the resulting activity cost? <em>(Targets M)</em></li>
+    <li>Who owns outbound today, and what platform is it on? <em>(Targets E and Competition)</em></li>
+    <li>If you wanted the notification campaign in production, whose budget is that? <em>(Targets E — ask it plainly, it is a natural question here)</em></li>
+  </ul>
+</section>
+
+<!-- SCENE B -->
+<section class="block scene">
+  <h2>Scene B — Copilot and the Supervisor View: Handle the Refusal Well</h2>
+  <p class="h2sub">20 minutes · Central station operations, supervisors, Miguel and Ulysses · Deliver inside the technical knowledge-transfer session</p>
+
+  <div class="chain">
+    <dt>Objective</dt><dd>Resolve the calls self-service correctly refuses, without the caller starting over</dd>
+    <dt>Metric</dt><dd>AHT on transferred Test-On calls; caller re-identification rate; containment visibility</dd>
+    <dt>Capability</dt><dd>Participant data and screen pop, transcript and auto-summary, Genesys Agent Copilot, Performance views and Flow Outcome reporting</dd>
+    <dt>Outcome</dt><dd>An exception transfer becomes a designed handoff, and the supervisor can see the whole journey for the first time</dd>
+  </div>
+
+  <div class="callout">
+    <span class="label">Register matters here</span>
+    <p>This sits inside a knowledge-transfer session Mario asked for. Deliver it as "here is how you would operate this," not "here is why we are better." The capability speaks; you do not have to.</p>
+  </div>
+
+  <h3>Talk track — the operator half</h3>
+  <ol class="beats">
+    <li><span class="bt">Frame the refusal as correct</span>
+      <div class="say"><b>Say</b>
+        <p>"We deliberately built this to refuse certain requests. A system that's currently in alarm doesn't get placed on test by a bot — it goes to a person. That's not a gap in the automation, that's the automation doing its job. What I want to show you is what happens on the other side of that decision."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Run the refusal</span>
+      <div class="show"><b>Show</b>Caller identifies the site, asks to place it on test. Eligibility check detects the active alarm. Assistant explains in plain language and transfers with a reason code.</div>
+      <div class="say"><b>Say</b>
+        <p>"Notice it didn't apologise or fail. It told the caller what was happening and why, then handed off on purpose."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Cut to the desktop</span>
+      <div class="show"><b>Show</b>Agent Workspace with the script already populated: site name and address, system identifier, intent, authentication result, transfer reason. Then transcript, then the auto-generated summary.</div>
+      <div class="say"><b>Say</b>
+        <p>"The caller hasn't repeated a single thing. The site is on screen, the identification result is on screen, and the reason they're here is on screen. Your operator's first sentence can be useful instead of 'can I take your central station number.'"</p>
+        <p>"And notice what isn't on screen. The personal identification code isn't there, and it isn't in the recording or the transcript either. Mario asked us to treat it like the last four of a social security number, so we secured the capture. What's carried forward is whether it validated and whether that person was authorised — not the code itself."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Copilot on the specific exception</span>
+      <div class="show"><b>Show</b>Genesys Agent Copilot surfacing the next step for an in-alarm site, drawn from the same knowledge content used in Scene C.</div>
+      <div class="say"><b>Say</b>
+        <p>"This is the same knowledge article the self-service side uses. One place to maintain it, two places it shows up. When you change the guidance for an in-alarm system, it changes for the bot and for the operator at the same time."</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3>Talk track — the supervisor half</h3>
+  <ol class="beats">
+    <li><span class="bt">Show the whole journey on one record</span>
+      <div class="show"><b>Show</b>The interaction detail: arrival, language selection, intent, identification, eligibility decision, transfer reason, agent handling, wrap-up. One record.</div>
+      <div class="say"><b>Say</b>
+        <p>"That's one interaction, start to finish. Self-service and the operator on the same record, with the same identifiers."</p>
+        <p>"Here's the question I'd ask about your current setup, and I'm genuinely asking. Can you produce one report today that follows a Test-On caller from arrival through to resolution?"</p>
+        <p>[Wait. The answer is almost certainly no, and it is better coming from them.]</p>
+      </div>
+    </li>
+
+    <li><span class="bt">The two containment numbers — do this before testing scores anything</span>
+      <div class="show"><b>Show</b>Flow Outcome performance for System Test completion; the five instrumented outcomes; wrap code reconciliation.</div>
+      <div class="say"><b>Say</b>
+        <p>"I want to be straight with you about containment, because it's one of your evaluation criteria and a single number would mislead you."</p>
+        <p>"In-scope containment is: of the callers who land in what we automated — standalone fire or burglar, single primary, full test, valid code, duration inside the state maximum — how many finished without a person. That measures what we built."</p>
+        <p>"All-traffic containment is: of every Test-On caller, how many finished without a person. That will be lower, and it should be, because combo systems, partial tests and test-off all go to an operator by agreement. Those aren't failures. They're the roadmap."</p>
+        <p>"Which brings me to a question I need from you: what share of your monitored base is combo? Because until I know that, neither of us can tell whether the number you're about to see is representative or just a reflection of what we scoped."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Hand the operating model over</span>
+      <div class="show"><b>Show</b>Performance dashboards filtered for queues, flows, and flow outcomes. Drill into detail. Save a view. Schedule an export.</div>
+      <div class="say"><b>Say</b>
+        <p>"You'll want your own versions of these. Save a view, filter it to your queues, schedule the export. This is yours to configure — it isn't a report we build for you."</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3>Discovery to extract here</h3>
+  <ul>
+    <li>What share of the monitored base is combo, and what share is HVAC? <em>(Targets M — this is the single most important number outstanding)</em></li>
+    <li>What is AHT on a Test-On call that reaches an operator today? <em>(Targets M)</em></li>
+    <li>Who looks at self-service reporting today, how often, and what decision do they make with it? <em>(Targets Champion)</em></li>
+  </ul>
+</section>
+
+<!-- SCENE C -->
+<section class="block scene">
+  <h2>Scene C — Knowledge and the Timed Change: Who Owns the Next Improvement</h2>
+  <p class="h2sub">12 minutes · Miguel, Ulysses, Mario, and whoever approves prompt language today · Deliver in the IT/administrator portion of knowledge transfer</p>
+
+  <div class="chain">
+    <dt>Objective</dt><dd>Extend automation continuously without a vendor engagement for every change</dd>
+    <dt>Metric</dt><dd>Elapsed time and cost per content change; answer coverage over time</dd>
+    <dt>Capability</dt><dd>Genesys Cloud Knowledge authored and published by JCI, surfaced to both the virtual agent and the agent desktop</dd>
+    <dt>Outcome</dt><dd>Coverage grows as an operational activity rather than as a vendor project</dd>
+  </div>
+
+  <div class="callout">
+    <span class="label">This scene doubles as the FAQ recommendation JCI asked for</span>
+    <p>On 24 August Rich flagged structured FAQ as low-effort if JCI supplies content, and Mario asked Genesys to recommend whether it should be in scope. That recommendation is still owed. Deliver it here, with working evidence attached, rather than as a paragraph in a document.</p>
+  </div>
+
+  <h3>Talk track</h3>
+  <ol class="beats">
+    <li><span class="bt">Set up the real question</span>
+      <div class="say"><b>Say</b>
+        <p>"You asked us to come back on whether FAQ should be in scope. My answer is yes, but not for the reason you'd expect — and I want to show you why rather than assert it."</p>
+        <p>"Your intent list has six intents and every one of them routes to a queue. Billing routes to billing. New service routes to the regional team. Local office routes to a person. There's nothing in there that answers a question."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Ask it the obvious way, then three ways nobody authored</span>
+      <div class="show"><b>Show</b>Ask a configured question. It answers. Then ask the same underlying question with different vocabulary, partial phrasing, and as a compound question. It still answers, sourced from the article.</div>
+      <div class="say"><b>Say</b>
+        <p>"Every one of those phrasings would be a new intent, a new announcement, and a change request in the way this works today. Here it's one article."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">Ask something with no answer</span>
+      <div class="show"><b>Show</b>An adjacent question with no article. Graceful outcome. Then show it captured as a content gap rather than lost.</div>
+      <div class="say"><b>Say</b>
+        <p>"It didn't guess. And the miss didn't disappear — it's recorded, so you know what to write next."</p>
+      </div>
+    </li>
+
+    <li><span class="bt">The timed change — the point of the whole scene</span>
+      <div class="show"><b>Show</b>Open the knowledge workbench. Author the missing article. Publish. Re-ask. It answers. Put a clock on it.</div>
+      <div class="say"><b>Say</b>
+        <p>"Ninety seconds. No ticket, no vendor, no release window."</p>
+        <p>"And here's the part I'd actually think hardest about. When you sent us the POC document, there was a note in it from your side saying the flow diagrams couldn't be rebuilt without the incumbent's original files. That's not a criticism of anyone — it's just what the current operating model costs you. If changing an answer needs a vendor, coverage stops growing. Twenty percent containment after two years is what that looks like."</p>
+      </div>
+      <div class="callout warn">
+        <span class="label">Judgement call on that last line</span>
+        <p>It is the sharpest line in the deck and it references their own document. Deliver it flat and without triumph, or not at all. If Mario is in the room, it will land — he wrote the direction to stop reproducing the incumbent design. If the room is junior, drop the second paragraph and keep the ninety seconds.</p>
+      </div>
+    </li>
+
+    <li><span class="bt">The recommendation, stated plainly</span>
+      <div class="say"><b>Say</b>
+        <p>"So the recommendation is: yes to FAQ, and the two places I'd start are billing and new service. Both are pure routing today, both are high volume by your own intent list, and neither needs an integration to answer. Send us the content you already have — even in the form your agents use — and we'll show you coverage before the readout."</p>
+        <p>"Governance-wise: versioned, you control who can publish, and every answer traces back to a source article. In a life-safety business you should be able to point at the document behind an answer. You can."</p>
+      </div>
+    </li>
+  </ol>
+
+  <h3>Discovery to extract here</h3>
+  <ul>
+    <li>Who approves prompt and answer language today, and how long does a change actually take end to end? <em>(Targets M and Paper Process)</em></li>
+    <li>Where does the FAQ content live now — agent-facing documents, a knowledge base, or in people's heads? <em>(Practical, and it unblocks the recommendation)</em></li>
+    <li>After handover, who at JCI owns prompts, intents and knowledge? <em>(Targets Champion and Decision Process)</em></li>
+  </ul>
+</section>
+
+<!-- OBJECTIONS -->
+<section class="block">
+  <h2><span class="num">5.</span> Objection Handling</h2>
+  <p class="h2sub">Prepared responses. Short, direct, no defensiveness.</p>
+
+  <div class="obj">
+    <h4>"Why wouldn't we just keep our contact center platform and replace the bot?"</h4>
+    <p>The real objection, and the one the incumbent will make for you. Do not argue against it.</p>
+    <div class="say"><b>Say</b><p>"You could, and we'd support it. Two things to weigh. First, the four capabilities your SOW asks about — self-service, agent handling, outbound, digital — only come from one place if the platform is one place; otherwise outbound stays where it is and the conversational layer can't see it. Second, the report I showed you that follows a caller from arrival to resolution only exists because both halves are on the same record. Split the stack and you're back to reconciling exports. Neither of those makes the decision for you. They should just be in it rather than discovered afterwards."</p></div>
+  </div>
+
+  <div class="obj">
+    <h4>"Your POC only contained X percent. We already get twenty."</h4>
+    <p>Pre-empt this in Scene B rather than answering it at the readout.</p>
+    <div class="say"><b>Say</b><p>"Those two numbers measure different populations, which is why we asked to define both up front. Your twenty percent is across all Test-On traffic. Ours is across the band we scoped — and we deliberately excluded combo, partial and test-off because the rules weren't documented well enough to automate safely in four weeks. Compare like with like and then look at what the excluded paths would add. That's the production conversation, and it's the one worth having."</p></div>
+  </div>
+
+  <div class="obj">
+    <h4>"This is life-safety. How do we trust AI not to make something up?"</h4>
+    <p>Expect this from Darrell or from a security reviewer. It is a fair question and the answer is strong.</p>
+    <div class="say"><b>Say</b><p>"The eligibility decision isn't AI. Whether a system can go on test is deterministic logic in Architect evaluating your rules — account scenario, alarm state, system type, duration against the state maximum. Same inputs, same answer, every time, and you can read the logic. The AI is on the surface: understanding what the caller said and collecting the values. Where we do generate language, it's grounded in your published knowledge articles rather than free-form, so every answer traces to a source document you control. And where the rules say stop — active alarm, ineligible configuration — it stops and hands to a person. That's a design decision, not a limitation we're apologising for."</p></div>
+    <p><strong>If pressed on governance:</strong> retrieval against approved content bounds the model to what JCI has published, and the audit trail from answer to source article is the artifact a compliance reviewer will ask for. Where tool and data boundaries need to be explicit and traceable, the Model Context Protocol gives that structure on an open, inspectable basis rather than a black box. <span class="tag t-val">to-verify</span> — confirm current entitlement and configuration before naming specific capabilities to a security reviewer.</p>
+  </div>
+
+  <div class="obj">
+    <h4>"We already have a dialer."</h4>
+    <div class="say"><b>Say</b><p>"Understood — so the question isn't whether you have one, it's whether the notification and the inbound journey report against each other. If a campaign reduces inbound Test-On calls and the two live on different platforms, nobody can prove it. That's the whole argument, and it's a small one. I'd rather you had it than not."</p></div>
+  </div>
+
+  <div class="obj">
+    <h4>"The Spanish was machine-translated."</h4>
+    <div class="say"><b>Say</b><p>"It was, and we said so in writing. That's a POC decision, not a production one — Mario reviewed the terminology and we'd expect professional localisation before anything goes live. What the POC proves is that the journey works in a second language with separate queues and separate reporting, and that adding a third costs the content, not another build."</p></div>
+  </div>
+
+  <div class="obj">
+    <h4>"Four weeks isn't a fair test of any platform."</h4>
+    <div class="say"><b>Say</b><p>"Agreed, which is why we asked what acceptable, good and excellent looked like in the time rather than pretending the constraint away. What four weeks does test is how quickly a design gets from a document to something callable, and how much of that you can change yourself afterwards. Those are the two things that determine what happens in year two."</p></div>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="block">
+  <h2><span class="num">6.</span> Mutual Action Plan</h2>
+  <p class="h2sub">Each milestone advances a MEDDPICC field or de-risks a known blocker.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:26%">Milestone</th><th style="width:13%">Owner</th><th style="width:13%">Target</th><th style="width:22%">Dependency</th><th>Advances</th></tr></thead>
+      <tbody>
+        <tr><td>Claim the demo/sales-team session slot with Todd; agree scene boundaries against PS scope</td><td>SC</td><td>This week</td><td>PS agreement</td><td>Delivery of all three scenes</td></tr>
+        <tr><td>Request combo and HVAC share of the monitored base from Darrell</td><td>SC</td><td>Before testing</td><td>None</td><td><strong>M</strong> — and the credibility of the readout</td></tr>
+        <tr><td>Request FAQ source content from Mario; commit to coverage evidence before the readout</td><td>SC</td><td>This week</td><td>JCI content</td><td>Closes an open Genesys commitment</td></tr>
+        <tr><td>Deliver the dialer scope recommendation ahead of JCI's internal view</td><td>SC + AE</td><td>This week</td><td>None</td><td>Closes an open commitment; opens outbound scope</td></tr>
+        <tr><td>Write both containment definitions into the Section 15 reporting row</td><td>SC</td><td>Before testing</td><td>None</td><td>Pre-frames the readout</td></tr>
+        <tr><td>Propose a design freeze at build completion, with later changes logged as variances</td><td>SC + PS</td><td>Build completion</td><td>PS agreement</td><td>Protects the readout</td></tr>
+        <tr><td>Obtain AHT and transfer volume for Test-On calls reaching an operator</td><td>SC</td><td>Testing week</td><td>JCI ops data</td><td><strong>M</strong> — makes the value hypothesis real</td></tr>
+        <tr><td>Establish contract positions for both incumbents; identify the economic buyer</td><td><strong>AE</strong></td><td>Now — blocking</td><td>Account access</td><td><strong>E</strong>, <strong>I</strong>, Competition</td></tr>
+        <tr><td>Establish the post-readout decision process and any procurement or security gate</td><td><strong>AE</strong></td><td>Before readout</td><td>Access above the SOW author</td><td><strong>D</strong> — Decision Process, <strong>P</strong></td></tr>
+        <tr><td>Complete the Section 15 commercial row with Genesys commercial input</td><td>AE + SC</td><td>Before readout</td><td>Architecture path, agent counts from JCI</td><td><strong>E</strong> — forces the commercial conversation</td></tr>
+        <tr><td>Deliver the architecture trade in the integration and production-readiness rows</td><td>SC</td><td>Before readout</td><td>None</td><td>The commercial ceiling of the deal</td></tr>
+        <tr><td>Readout: present results with both containment measures and the phase-two roadmap</td><td>SC + PS + AE</td><td>Week after testing</td><td>All of the above</td><td>Converts POC to production conversation</td></tr>
+        <tr><td>Secure a named production sponsor and a decision date</td><td>AE</td><td>At readout</td><td>Readout outcome</td><td><strong>E</strong>, <strong>D</strong> — Decision Process</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- DELIVERY -->
+<section class="block">
+  <h2><span class="num">7.</span> Delivery Notes</h2>
+  <p class="h2sub">Practical constraints on actually getting these delivered.</p>
+  <ul>
+    <li><strong>Three scenes, three different rooms.</strong> Scene A needs operations leadership and the outbound owner — people the SOW author may not be able to convene. If that room cannot be assembled, that is a qualification finding for the AE, not a reason to deliver it to the wrong audience.</li>
+    <li><strong>Scenes B and C ride inside knowledge transfer.</strong> Mario asked for IT navigation, customer-facing handling, and supervisor and manager views. Scene B is the supervisor content. Scene C is the IT content. Delivered in that register they cost no extra meeting.</li>
+    <li><strong>Do not demo in the POC tenant.</strong> Use an SC-owned org. A build issue must not taint a demo and a demo artifact must not appear in a scored environment.</li>
+    <li><strong>Stub, never rebuild.</strong> Scene B needs a transfer point, not a Test-On journey. Anything that looks like a parallel build creates a coordination problem with PS.</li>
+    <li><strong>Pick the exception jointly with the PS lead.</strong> Scene B is written around active alarm — unambiguous, urgent, and a correct refusal rather than a failure. Confirm that is the exception PS implemented.</li>
+    <li><strong>Each scene has three discovery questions.</strong> They are the reason the scene earns its slot. If you deliver the capability and leave without the answers, the demo was entertainment.</li>
+    <li><strong>Held in reserve:</strong> Speech and Text Analytics, workforce engagement, and AI-driven quality management. All real, none with scoring weight, and showing them early tells the incumbent's sponsor exactly what you are after.</li>
+  </ul>
+</section>
+
+<footer class="doc">
+  <h3>Change log (v1 → v4)</h3>
+  <ul>
+    <li>Reordered the scenes to put outbound first — the dialer question is unanswered on JCI's side and a recommendation is worth more before their internal view forms than after.</li>
+    <li>Replaced asserted value with ranges and marked every figure lacking a JCI baseline as to-verify. The all-traffic containment range now carries an explicit warning that it is unreliable without the combo share of the base.</li>
+    <li>Rewrote the containment passage in Scene B as a pre-emption delivered before testing rather than a defence offered at the readout, and moved the combo-share question into the talk track where it is natural to ask.</li>
+    <li>Recast Scene C from a knowledge demo into the FAQ recommendation JCI actually requested on 24 August, with the demo as supporting evidence and a specific starting recommendation.</li>
+    <li>Added three discovery questions per scene, each targeting a named MEDDPICC gap, and flagged the economic buyer and decision process as AE-blocking rather than background.</li>
+    <li>Tightened the register throughout: Scenes B and C are written to be delivered inside knowledge transfer as operating guidance, not as competitive pitch, and the sharpest line in Scene C now carries an explicit judgement call on when not to use it.</li>
+  </ul>
+  <p style="margin-top:14px;margin-bottom:0;"><strong>Sources:</strong> POC SOW and Current-State Technical Baseline v0.3; JCI account mock data and rules workbook; sample intents workbook; working session minutes of 24 and 26 August and 1 and 2 September 2026. No JCI metrics, product entitlements, licensing terms, or commercial conditions have been invented. Internal use only.</p>
+</footer>
+
+</div>
+</body>
+</html>
