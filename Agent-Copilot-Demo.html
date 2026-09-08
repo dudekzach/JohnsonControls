@@ -2,22 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>JCI Central Station Operations — Agent Guidance</title>
+<title>JCI Agent Script — System Test-On Transfer</title>
 <style>
   :root {
     --jci-red: #c8102e;
-    --jci-red-dark: #9c0c22;
-    --ink: #1c2126;
-    --sub: #5c6570;
-    --line: #e1e4e8;
-    --bg: #f4f5f7;
-    --panel: #ffffff;
-    --ok-bg: #e9f6ee;
-    --ok-fg: #1c7a3f;
-    --warn-bg: #fdeeea;
-    --warn-fg: #b3341f;
-    --info-bg: #eaf1fb;
-    --info-fg: #1f4e91;
+    --ink: #202124;
+    --sub: #5f6368;
+    --line: #e2e4e7;
+    --bg: #ffffff;
+    --panel: #fafbfc;
   }
   * { box-sizing: border-box; }
   body {
@@ -25,213 +18,117 @@
     font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
     background: var(--bg);
     color: var(--ink);
+    font-size: 14px;
   }
-  .app { max-width: 1040px; margin: 0 auto; }
-  .topbar {
-    background: var(--jci-red);
-    color: white;
-    padding: 14px 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .script-pane { max-width: 420px; margin: 0 auto; border: 1px solid var(--line); }
+
+  .pane-header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--line);
   }
-  .topbar .brand { display: flex; align-items: center; gap: 10px; }
-  .topbar .brand .mark {
-    width: 30px; height: 30px; background: white; color: var(--jci-red);
-    border-radius: 6px; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+  .pane-header .eyebrow {
+    color: var(--jci-red); font-weight: 700; font-size: 0.68rem;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;
   }
-  .topbar .brand .title { font-weight: 700; font-size: 0.98rem; letter-spacing: 0.01em; }
-  .topbar .subtitle { font-size: 0.78rem; opacity: 0.9; }
-  .topbar .call-badge {
-    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4);
-    padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+  .pane-header .title { font-weight: 700; font-size: 0.98rem; margin-bottom: 6px; }
+  .pane-header .context-line { font-size: 0.8rem; color: var(--sub); }
+  .pane-header .context-line b { color: var(--ink); font-weight: 600; }
+
+  .section {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-title {
+    font-weight: 700; font-size: 0.82rem; margin-bottom: 8px;
   }
 
-  .exception-banner {
-    background: var(--warn-bg); color: var(--warn-fg);
-    padding: 10px 22px; font-size: 0.86rem; font-weight: 600;
-    border-bottom: 1px solid #f3d3cc;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .exception-banner .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warn-fg); flex: none; animation: pulse 1.6s infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; padding: 16px 22px 40px; align-items: start; }
-  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
-
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .panel-header {
-    padding: 12px 16px; border-bottom: 1px solid var(--line);
-    font-size: 0.82rem; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.04em;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .panel-body { padding: 14px 16px; }
-
-  .field-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid #f1f2f4; font-size: 0.88rem; }
-  .field-row:last-child { border-bottom: none; }
-  .field-row .k { color: var(--sub); }
-  .field-row .v { font-weight: 600; text-align: right; }
+  .field { padding: 6px 0; border-bottom: 1px solid #f1f2f4; }
+  .field:last-child { border-bottom: none; }
+  .field-label { font-size: 0.78rem; color: var(--sub); display: flex; justify-content: space-between; align-items: baseline; }
+  .field-label .attr { font-family: 'SF Mono', Consolas, monospace; font-size: 0.68rem; color: #9aa0a6; }
+  .field-value { font-size: 0.92rem; font-weight: 600; margin-top: 1px; }
 
   .pic-note {
-    margin-top: 10px; background: var(--info-bg); color: var(--info-fg);
-    font-size: 0.78rem; padding: 8px 10px; border-radius: 6px; line-height: 1.4;
+    margin-top: 8px; background: var(--panel); border: 1px solid var(--line);
+    font-size: 0.75rem; color: var(--sub); padding: 8px 10px; border-radius: 4px; line-height: 1.4;
   }
 
-  .stack { display: flex; flex-direction: column; gap: 16px; }
-
-  .summary-text { font-size: 0.9rem; line-height: 1.55; margin-bottom: 10px; }
-  .transcript-toggle {
-    background: none; border: 1px solid var(--line); color: var(--jci-red-dark);
-    font-size: 0.82rem; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  .footer {
+    padding: 10px 16px; font-size: 0.7rem; color: #9aa0a6;
   }
-  .transcript-toggle:hover { background: #fbeceb; }
-  .transcript {
-    margin-top: 10px; background: #fafbfc; border: 1px solid var(--line); border-radius: 8px;
-    padding: 12px 14px; font-size: 0.84rem; display: none; max-height: 220px; overflow-y: auto;
-  }
-  .transcript.open { display: block; }
-  .transcript .line { margin-bottom: 8px; }
-  .transcript .speaker { font-weight: 700; font-size: 0.76rem; text-transform: uppercase; color: var(--sub); margin-right: 6px; }
-
-  .copilot-panel .panel-header { background: linear-gradient(90deg, #fff, #fafbfc); color: var(--jci-red-dark); }
-  .copilot-tag {
-    display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 700;
-    background: var(--info-bg); color: var(--info-fg); padding: 3px 9px; border-radius: 20px;
-  }
-  .next-step {
-    background: var(--ok-bg); border: 1px solid #cdeadb; border-radius: 8px; padding: 14px; margin-top: 10px;
-  }
-  .next-step .heading { font-weight: 700; color: var(--ok-fg); font-size: 0.88rem; margin-bottom: 6px; }
-  .next-step ol { margin: 6px 0 0; padding-left: 20px; font-size: 0.86rem; }
-  .next-step li { margin-bottom: 5px; }
-  .source-line { margin-top: 10px; font-size: 0.76rem; color: var(--sub); }
-
-  .wrapup { display: flex; flex-direction: column; gap: 10px; }
-  .wrapup .code-line { display: flex; justify-content: space-between; font-size: 0.88rem; background: #fafbfc; border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; }
-  .wrapup .code-line .v { font-weight: 700; color: var(--warn-fg); }
-  .complete-btn {
-    margin-top: 6px; background: var(--jci-red); color: white; border: none; border-radius: 8px;
-    padding: 11px 18px; font-size: 0.92rem; font-weight: 700; cursor: pointer;
-  }
-  .complete-btn:hover { background: var(--jci-red-dark); }
-  .complete-btn.done { background: var(--ok-fg); }
-  .hint { font-size: 0.76rem; color: var(--sub); margin-top: 6px; }
+  .footer .ref-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .footer .ref-row .v { font-family: 'SF Mono', Consolas, monospace; }
 </style>
 </head>
 <body>
-<div class="app">
 
-  <div class="topbar">
-    <div class="brand">
-      <div class="mark">JCI</div>
-      <div>
-        <div class="title">Central Station Operations — Agent Guidance</div>
-        <div class="subtitle">System Test-On · Self-Service Exception Transfer</div>
-      </div>
-    </div>
-    <div class="call-badge" id="callTimer">Call duration 00:47</div>
+<div class="script-pane">
+
+  <div class="pane-header">
+    <div class="eyebrow">JCI Central Station Operations</div>
+    <div class="title">System Test-On — Active Alarm Transfer</div>
+    <div class="context-line">Caller: <b>Loyal, Cameron</b> &nbsp;·&nbsp; Queue: <b>Dudek_A</b></div>
   </div>
 
-  <div class="exception-banner">
-    <span class="dot"></span>
-    Transferred from self-service — Active alarm detected · Reason code: ACTIVE_ALARM_EXCEPTION
-  </div>
-
-  <div class="grid">
-
-    <!-- LEFT: Screen pop / caller context -->
-    <div class="stack">
-      <div class="panel">
-        <div class="panel-header">Site &amp; Caller Context</div>
-        <div class="panel-body">
-          <div class="field-row"><span class="k">Site</span><span class="v">JCI Distribution Center 12</span></div>
-          <div class="field-row"><span class="k">Address</span><span class="v">4400 Miller Rd<br>Dearborn, MI</span></div>
-          <div class="field-row"><span class="k">System type</span><span class="v">FA — Fire Alarm</span></div>
-          <div class="field-row"><span class="k">Central station #</span><span class="v">CS-88214-A</span></div>
-          <div class="field-row"><span class="k">PIC</span><span class="v">Validated ✓</span></div>
-          <div class="field-row"><span class="k">Intent</span><span class="v">Place System on Test</span></div>
-          <div class="field-row"><span class="k">Requested window</span><span class="v">Today, 8:00 AM–12:00 PM</span></div>
-          <div class="pic-note">PIC value is intentionally not displayed here. Self-service validated it and passed only the result forward — the code itself was never recorded or transcribed.</div>
-        </div>
-      </div>
+  <div class="section">
+    <div class="section-title">Site &amp; System</div>
+    <div class="field">
+      <div class="field-label">Site Name <span class="attr">jci.siteName</span></div>
+      <div class="field-value">JCI Distribution Center 12</div>
     </div>
-
-    <!-- RIGHT: transcript/summary + copilot + wrapup -->
-    <div class="stack">
-
-      <div class="panel">
-        <div class="panel-header">Self-Service Summary</div>
-        <div class="panel-body">
-          <div class="summary-text">
-            Caller identified the site by address and asked to place the fire alarm system on test for a 4-hour window starting immediately. Identity and central station number were validated. Before scheduling the test, the system checked current alarm status and found an <strong>active alarm condition</strong> on this account. Per policy, systems with an active alarm cannot be placed on test. Self-service explained this to the caller and transferred deliberately, with the reason carried forward — nothing above was re-asked of the caller.
-          </div>
-          <button class="transcript-toggle" onclick="toggleTranscript()">View full transcript</button>
-          <div class="transcript" id="transcriptBox">
-            <div class="line"><span class="speaker">Caller</span>Hi, I need to put the system at 4400 Miller on test starting now until around noon.</div>
-            <div class="line"><span class="speaker">Assistant</span>I can help with that. Let me pull up that site and confirm a few details first.</div>
-            <div class="line"><span class="speaker">Assistant</span>[Site and identity validated] Thanks — I have the fire alarm system at 4400 Miller Rd.</div>
-            <div class="line"><span class="speaker">Assistant</span>Before I schedule that test, I need to check the current status of the system.</div>
-            <div class="line"><span class="speaker">Assistant</span>I see this system currently has an active alarm. I'm not able to place it on test while an alarm is active — I don't want to risk missing a real event during your test window.</div>
-            <div class="line"><span class="speaker">Assistant</span>I'm going to connect you with a specialist who can look at the active alarm with you right now.</div>
-            <div class="line"><span class="speaker">Caller</span>Okay, that makes sense.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel copilot-panel">
-        <div class="panel-header">
-          <span>Genesys Agent Copilot</span>
-          <span class="copilot-tag">Suggested next step</span>
-        </div>
-        <div class="panel-body">
-          <div class="next-step">
-            <div class="heading">Active Alarm During Test Request</div>
-            <ol>
-              <li>Confirm the active alarm with the caller — panel zone, alarm type, and approximate time raised.</li>
-              <li>Do not place the system on test while the alarm is active, even for a partial system.</li>
-              <li>Follow standard alarm-verification procedure before offering to reschedule the test.</li>
-              <li>Once the alarm clears, offer to schedule the original test window or a new one.</li>
-            </ol>
-          </div>
-          <div class="source-line">Sourced from Knowledge Base: <strong>JCI Central Station Operations FAQ</strong> — the same knowledge content built for the self-service FAQ scene, reused here.</div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">Wrap-Up</div>
-        <div class="panel-body wrapup">
-          <div class="code-line"><span>Transfer reason</span><span class="v">ACTIVE_ALARM_EXCEPTION</span></div>
-          <div class="code-line"><span>Outcome</span><span class="v" id="outcomeVal">Pending</span></div>
-          <button class="complete-btn" id="completeBtn" onclick="completeInteraction()">Complete Interaction</button>
-          <div class="hint">Outcome and reason code carry forward automatically — no manual re-entry of anything already captured in self-service.</div>
-        </div>
-      </div>
-
+    <div class="field">
+      <div class="field-label">Site Address <span class="attr">jci.siteAddress</span></div>
+      <div class="field-value">4400 Miller Rd, Dearborn, MI</div>
+    </div>
+    <div class="field">
+      <div class="field-label">System Type <span class="attr">jci.systemType</span></div>
+      <div class="field-value">FA</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Central Station Number <span class="attr">jci.csNumber</span></div>
+      <div class="field-value">CS-88214-A</div>
     </div>
   </div>
+
+  <div class="section">
+    <div class="section-title">Service Request</div>
+    <div class="field">
+      <div class="field-label">Caller Intent <span class="attr">jci.intent</span></div>
+      <div class="field-value">Place.SystemTest.On</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Requested Window <span class="attr">jci.requestedWindow</span></div>
+      <div class="field-value">Today, 8:00 AM–12:00 PM</div>
+    </div>
+    <div class="field">
+      <div class="field-label">PIC Validation <span class="attr">jci.picValid</span></div>
+      <div class="field-value">Valid</div>
+    </div>
+    <div class="pic-note">PIC value is not displayed. Self-service validated it and passed only the result forward — the code itself was never recorded or transcribed.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Transfer Context</div>
+    <div class="field">
+      <div class="field-label">Active Alarm <span class="attr">jci.activeAlarm</span></div>
+      <div class="field-value">true</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Transfer Reason <span class="attr">jci.transferReason</span></div>
+      <div class="field-value">ACTIVE_ALARM_EXCEPTION</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Closing Request <span class="attr">jci.closingRequest</span></div>
+      <div class="field-value">TRANSFER</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="ref-row"><span>Script ID</span><span class="v">063d31c5-9373-4b1a-a05f-f75b8d48c10b</span></div>
+    <div class="ref-row"><span>Screen Pop Name</span><span class="v">Dudek_Dynamic-Custom</span></div>
+  </div>
+
 </div>
 
-<script>
-  function toggleTranscript() {
-    document.getElementById('transcriptBox').classList.toggle('open');
-  }
-  function completeInteraction() {
-    document.getElementById('outcomeVal').textContent = 'Active alarm reviewed — test rescheduled pending clearance';
-    var btn = document.getElementById('completeBtn');
-    btn.textContent = '✓ Wrap-up saved';
-    btn.classList.add('done');
-    btn.disabled = true;
-  }
-  // Cosmetic call timer for demo realism
-  (function () {
-    var seconds = 47;
-    setInterval(function () {
-      seconds++;
-      var m = Math.floor(seconds / 60).toString().padStart(2, '0');
-      var s = (seconds % 60).toString().padStart(2, '0');
-      document.getElementById('callTimer').textContent = 'Call duration ' + m + ':' + s;
-    }, 1000);
-  })();
-</script>
 </body>
 </html>
