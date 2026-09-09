@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JCI Central Station Operations — Recurring Alarm Review</title>
+<style>
+  /* ============ Design tokens (matched to primary Scene 2 agent script) ============ */
+  :root {
+    --jci-red: #c8102e;
+    --jci-red-dark: #9c0c22;
+    --ink: #1c2126;
+    --sub: #5c6570;
+    --line: #e1e4e8;
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --ok-bg: #e9f6ee;
+    --ok-fg: #1c7a3f;
+    --warn-bg: #fdeeea;
+    --warn-fg: #b3341f;
+    --info-bg: #eaf1fb;
+    --info-fg: #1f4e91;
+    /* new token: reserved for Copilot-surfaced content only, so an agent can tell
+       at a glance "the platform recommended this" vs. "this is base call handling" */
+    --copilot: #5b3fd6;
+    --copilot-bg: #f2eefd;
+    --copilot-line: #d9cdf7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .app { max-width: 1020px; margin: 0 auto; padding-bottom: 40px; }
+
+  /* ============ Top identity bar (same brand system as primary script) ============ */
+  .topbar {
+    background: var(--jci-red);
+    color: white;
+    padding: 12px 20px;
+  }
+  .topbar .row1 { display: flex; align-items: center; gap: 10px; }
+  .topbar .mark {
+    width: 28px; height: 28px; background: white; color: var(--jci-red);
+    border-radius: 6px; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex: none;
+  }
+  .topbar .title { font-weight: 700; font-size: 0.95rem; }
+  .topbar .subtitle { font-size: 0.76rem; opacity: 0.9; margin-top: 1px; }
+
+  /* ============ Copilot recommendation banner — the "why this popped" ============ */
+  .copilot-banner {
+    background: var(--copilot-bg);
+    border-bottom: 1px solid var(--copilot-line);
+    padding: 12px 20px;
+  }
+  .copilot-banner .head {
+    display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;
+  }
+  .copilot-banner .bolt {
+    width: 22px; height: 22px; border-radius: 6px; background: var(--copilot); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex: none;
+  }
+  .copilot-banner .label { font-weight: 700; font-size: 0.85rem; color: var(--copilot); }
+  .copilot-banner .sub { font-size: 0.76rem; color: var(--sub); margin-top: 1px; }
+  .copilot-banner .chev { margin-left: auto; color: var(--copilot); font-size: 0.75rem; transition: transform 0.15s; }
+  .copilot-banner .detail {
+    display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--copilot-line);
+    font-size: 0.82rem; color: var(--ink); line-height: 1.5;
+  }
+  .copilot-banner.open .detail { display: block; }
+  .copilot-banner.open .chev { transform: rotate(180deg); }
+  .copilot-banner .detail .quote {
+    display: block; margin: 6px 0 8px; padding: 8px 10px; background: white; border-left: 3px solid var(--copilot);
+    font-style: italic; color: var(--ink);
+  }
+  .copilot-banner .detail .signals { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .signal-chip {
+    font-size: 0.72rem; font-weight: 700; background: white; color: var(--copilot);
+    border: 1px solid var(--copilot-line); border-radius: 20px; padding: 3px 10px;
+  }
+
+  /* ============ Persistent context strip ============ */
+  .context-strip {
+    background: #fff; border-bottom: 1px solid var(--line);
+    padding: 10px 20px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  }
+  .context-strip .item { font-size: 0.8rem; }
+  .context-strip .k { color: var(--sub); margin-right: 5px; }
+  .context-strip .v { font-weight: 600; }
+  .pattern-flag {
+    margin-left: auto; background: var(--copilot); color: white; font-weight: 700;
+    font-size: 0.74rem; padding: 5px 12px; border-radius: 6px; letter-spacing: 0.02em;
+  }
+
+  /* ============ Content ============ */
+  .content { padding: 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .card h2 {
+    margin: 0 0 4px; font-size: 0.92rem; font-weight: 700;
+  }
+  .card .card-sub { font-size: 0.78rem; color: var(--sub); margin-bottom: 12px; }
+
+  /* ---- Alarm history table ---- */
+  table.history { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  table.history th {
+    text-align: left; color: var(--sub); font-weight: 600; font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 6px 8px; border-bottom: 1px solid var(--line);
+  }
+  table.history td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.history tr:last-child td { border-bottom: none; }
+  .status-pill {
+    display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+  }
+  .status-pill.active { background: var(--warn-bg); color: var(--warn-fg); }
+  .status-pill.resolved { background: var(--ok-bg); color: var(--ok-fg); }
+
+  .threshold-banner {
+    margin-top: 12px; background: var(--copilot-bg); border: 1px solid var(--copilot-line);
+    border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; font-size: 0.82rem;
+  }
+  .threshold-banner strong { color: var(--copilot); }
+
+  /* ---- Decision tree ---- */
+  .decision-options { display: flex; flex-direction: column; gap: 10px; }
+  .decision-opt {
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; cursor: pointer;
+    display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.12s, background 0.12s;
+  }
+  .decision-opt:hover { border-color: var(--copilot); }
+  .decision-opt.recommended { border-color: var(--copilot); background: var(--copilot-bg); }
+  .decision-opt input[type="radio"] { margin-top: 3px; accent-color: var(--copilot); flex: none; }
+  .decision-opt .opt-body { flex: 1; }
+  .decision-opt .opt-title { font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+  .decision-opt .opt-desc { font-size: 0.79rem; color: var(--sub); margin-top: 3px; line-height: 1.4; }
+  .rec-tag {
+    background: var(--copilot); color: white; font-size: 0.65rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; letter-spacing: 0.03em;
+  }
+
+  /* ---- SAY blocks ---- */
+  .say-block {
+    background: var(--info-bg); border-left: 3px solid var(--info-fg); border-radius: 0 6px 6px 0;
+    padding: 10px 12px; font-size: 0.85rem; color: var(--ink); margin-bottom: 8px;
+  }
+  .say-block:last-child { margin-bottom: 0; }
+  .say-block .tag {
+    display: block; font-size: 0.68rem; font-weight: 800; color: var(--info-fg); letter-spacing: 0.04em;
+    margin-bottom: 3px; text-transform: uppercase;
+  }
+
+  /* ---- Action form ---- */
+  .field-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+  .field { flex: 1; min-width: 200px; }
+  .field label {
+    display: block; font-size: 0.74rem; font-weight: 700; color: var(--sub); margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .field select, .field input[type="text"], .field textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font-size: 0.85rem; font-family: inherit; color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; margin-bottom: 14px; }
+  .checkbox-row input { accent-color: var(--copilot); }
+
+  .btn {
+    display: inline-block; background: var(--copilot); color: white; border: none; border-radius: 7px;
+    padding: 10px 18px; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+  }
+  .btn:hover { background: #4a30b8; }
+  .btn:disabled { background: #b9b0d9; cursor: not-allowed; }
+
+  .confirm-state {
+    display: none; text-align: center; padding: 22px 18px;
+  }
+  .confirm-state.show { display: block; }
+  .confirm-state .check {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--ok-bg); color: var(--ok-fg);
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 800;
+    margin: 0 auto 10px;
+  }
+  .confirm-state .headline { font-weight: 700; font-size: 0.92rem; margin-bottom: 4px; }
+  .confirm-state .sub { font-size: 0.8rem; color: var(--sub); }
+
+  .hidden { display: none; }
+
+  .footer-note {
+    padding: 0 20px; font-size: 0.74rem; color: var(--sub); line-height: 1.5; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ Identity (same brand system as the primary Scene 2 script) ============ -->
+  <div class="topbar">
+    <div class="row1">
+      <div class="mark">JCI</div>
+      <div>
+        <div class="title">Central Station Operations — Agent Assist</div>
+        <div class="subtitle">Recurring Alarm Review</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Copilot "why this appeared" banner ============ -->
+  <div class="copilot-banner" id="copilotBanner" onclick="toggleBanner()">
+    <div class="head">
+      <div class="bolt">AI</div>
+      <div>
+        <div class="label">Next Best Action — Surfaced by Agent Copilot</div>
+        <div class="sub">Detected mid-call · click for detail</div>
+      </div>
+      <div class="chev">▾</div>
+    </div>
+    <div class="detail">
+      Copilot flagged this call against two overlapping signals rather than one:
+      <span class="quote">"I think I'd like to just talk to a supervisor about the fact that this keeps happening on this account."</span>
+      The <strong>Escalate to Supervisor</strong> topic covers the request itself — that already surfaced the Escalate Alarm Response knowledge article.
+      The recommendation below is separate: it's triggered by the repeat-occurrence phrasing layered on top of that topic, which points to an account-pattern question a single knowledge article doesn't answer.
+      <div class="signals">
+        <span class="signal-chip">Topic: Escalate to Supervisor</span>
+        <span class="signal-chip">Phrase: repeat-occurrence language</span>
+        <span class="signal-chip">Signal: compound match</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Persistent context ============ -->
+  <div class="context-strip">
+    <div class="item"><span class="k">Caller</span><span class="v">Cameron Loyal</span></div>
+    <div class="item"><span class="k">Site</span><span class="v">JCI Distribution Center 12</span></div>
+    <div class="item"><span class="k">System</span><span class="v">FA — Fire Alarm, Zone 4</span></div>
+    <div class="pattern-flag">Recurring Alarm Pattern</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ============ Account alarm history ============ -->
+    <div class="card">
+      <h2>Account Alarm History — Zone 4</h2>
+      <div class="card-sub">Pulled automatically so you don't have to ask Cameron to repeat what he's already told you.</div>
+      <table class="history">
+        <tr>
+          <th>Date</th>
+          <th>Zone</th>
+          <th>Status</th>
+          <th>Resolution</th>
+        </tr>
+        <tr>
+          <td>Today, 9:42 AM</td>
+          <td>Zone 4</td>
+          <td><span class="status-pill active">Active</span></td>
+          <td>In progress — this call</td>
+        </tr>
+        <tr>
+          <td>14 days ago</td>
+          <td>Zone 4</td>
+          <td><span class="status-pill resolved">Resolved</span></td>
+          <td>Panel reset by field technician on site</td>
+        </tr>
+        <tr>
+          <td>39 days ago</td>
+          <td>Zone 4</td>
+          <td><span class="status-pill resolved">Resolved</span></td>
+          <td>Low-battery fault cleared, no dispatch</td>
+        </tr>
+      </table>
+      <div class="threshold-banner">
+        <span>⚠</span>
+        <span><strong>3 active-alarm events on Zone 4 in 45 days.</strong> Repeat-incident threshold met — this is no longer a single-call issue.</span>
+      </div>
+    </div>
+
+    <!-- ============ Decision tree ============ -->
+    <div class="card">
+      <h2>Recommended Next Action</h2>
+      <div class="card-sub">Pick the path that matches what you and Cameron land on.</div>
+      <div class="decision-options">
+        <label class="decision-opt recommended">
+          <input type="radio" name="decision" value="dispatch" checked>
+          <div class="opt-body">
+            <div class="opt-title">Create Field Service Dispatch Ticket <span class="rec-tag">RECOMMENDED</span></div>
+            <div class="opt-desc">Three Zone 4 events in 45 days meets the repeat-incident threshold. A technician should inspect the panel rather than continue clearing individual alarms.</div>
+          </div>
+        </label>
+        <label class="decision-opt">
+          <input type="radio" name="decision" value="flag">
+          <div class="opt-body">
+            <div class="opt-title">Flag Account for Monitoring Only</div>
+            <div class="opt-desc">Log the pattern without dispatching a technician. Use if today's event has a clear one-off cause unrelated to the prior two.</div>
+          </div>
+        </label>
+        <label class="decision-opt">
+          <input type="radio" name="decision" value="callback">
+          <div class="opt-body">
+            <div class="opt-title">Supervisor Callback Only</div>
+            <div class="opt-desc">Honor Cameron's specific request for a supervisor without opening a dispatch ticket yet. Use if he wants to discuss account-level options first.</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- ============ SAY blocks ============ -->
+    <div class="card">
+      <h2>What to Say</h2>
+      <div class="say-block">
+        <span class="tag">Acknowledge the pattern</span>
+        This is actually the third active-alarm event on this system in the last forty-five days, so I understand why this is frustrating. I'm not just going to close this one out — I'm getting it flagged for a technician to look at the panel itself.
+      </div>
+      <div class="say-block">
+        <span class="tag">Set expectation</span>
+        I'm also bringing in a supervisor on this, like you asked, so you have a direct point of contact if it happens again — you shouldn't have to call in every time this trips.
+      </div>
+    </div>
+
+    <!-- ============ Action capture ============ -->
+    <div class="card" id="actionCard">
+      <h2>Log This Action</h2>
+      <div class="card-sub">Required before you can wrap up this interaction.</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Priority</label>
+          <select id="priority">
+            <option>Expedited — recommended</option>
+            <option>Standard</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Assign To</label>
+          <select id="assignTo">
+            <option>Field Service — Dearborn Area</option>
+            <option>Field Service — Regional Queue</option>
+            <option>Supervisor Queue Only</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Notes for Technician / Supervisor</label>
+          <textarea id="notes" placeholder="e.g. Third Zone 4 event in 45 days. Panel history attached. Customer requested supervisor contact.">Third Zone 4 active-alarm event in 45 days. Prior two resolved on-site (panel reset, battery fault). Customer requested supervisor follow-up.</textarea>
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="notifiedCheck">
+        <label for="notifiedCheck">Cameron has been told this account is being flagged for pattern review</label>
+      </div>
+      <button class="btn" id="logBtn" onclick="logAction()">Log Recurring Alarm Review</button>
+    </div>
+
+    <!-- ============ Confirmation ============ -->
+    <div class="card confirm-state" id="confirmState">
+      <div class="check">✓</div>
+      <div class="headline">Recurring Alarm Review Logged</div>
+      <div class="sub">Field Service ticket and supervisor callback are queued. Return to the primary call script to continue handling this interaction.</div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">
+    This assist opens as a Copilot-recommended action layered on top of the primary Active Alarm Exception script — it does not replace it. It appears only when Copilot detects both the escalation topic and repeat-occurrence phrasing together; a supervisor request alone still routes only to the standard knowledge article.
+  </div>
+
+</div>
+
+<script>
+  function toggleBanner() {
+    document.getElementById('copilotBanner').classList.toggle('open');
+  }
+
+  function logAction() {
+    const btn = document.getElementById('logBtn');
+    btn.disabled = true;
+    btn.textContent = 'Logging…';
+    setTimeout(() => {
+      document.getElementById('actionCard').classList.add('hidden');
+      document.getElementById('confirmState').classList.add('show');
+    }, 500);
+  }
+</script>
+
+</body>
+</html>
