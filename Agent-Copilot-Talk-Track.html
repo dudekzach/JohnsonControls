@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCI Central Station · Agent Copilot Teleprompter</title>
+<style>
+  :root{
+    --bg:#0a0e13; --bg-elev:#10161d; --panel:#151c25; --panel-hover:#1b2330;
+    --border:#232c38; --text:#e7ecf1; --text-dim:#9aa7b5; --text-faint:#5f6c7a;
+    --accent:#e2384f; --accent-soft:#3a1319; --accent-text:#ff8b98;
+    --amber:#f5a524; --amber-soft:#3a2c10; --amber-text:#ffcf7d;
+    --blue:#5aa6ff; --blue-soft:#0f2740; --blue-text:#9cc7ff;
+    --green:#3ddc9b; --green-soft:#0f3327; --green-text:#8ff0c6;
+    --violet:#b09bff; --violet-soft:#241d40; --violet-text:#cfc2ff;
+    --shadow: 0 8px 24px rgba(0,0,0,.35);
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: "SF Mono", "IBM Plex Mono", "Roboto Mono", ui-monospace, Menlo, Consolas, monospace;
+    --radius: 10px;
+  }
+  html[data-theme="light"]{
+    --bg:#eef1f4; --bg-elev:#f6f7f9; --panel:#ffffff; --panel-hover:#f1f3f6;
+    --border:#dbe1e7; --text:#161b20; --text-dim:#4c5762; --text-faint:#8792a0;
+    --accent:#b3122a; --accent-soft:#f7dee1; --accent-text:#8a0e21;
+    --amber:#96590a; --amber-soft:#f8e7cb; --amber-text:#7a4708;
+    --blue:#1c5fd6; --blue-soft:#dfe9fb; --blue-text:#164ba8;
+    --green:#127a56; --green-soft:#dcf3e9; --green-text:#0f6346;
+    --violet:#6a4fd6; --violet-soft:#e7e1fb; --violet-text:#553da8;
+    --shadow: 0 8px 20px rgba(30,40,55,.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--sans);
+    font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue-text); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* ===================== Header ===================== */
+  header.topbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:16px;
+    padding:10px 18px; background:var(--bg-elev); border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex; flex-direction:column; gap:1px; margin-right:auto;}
+  .brand .t1{font-weight:700; font-size:0.92rem; letter-spacing:.01em;}
+  .brand .t2{font-size:0.76rem; color:var(--text-faint);}
+  .brand .t2 b{color:var(--text-dim); font-weight:600;}
+
+  .topbtn{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--panel); border:1px solid var(--border); color:var(--text);
+    padding:7px 11px; border-radius:8px; font-size:0.78rem; font-weight:600;
+    cursor:pointer; font-family:var(--sans); white-space:nowrap;
+  }
+  .topbtn:hover{background:var(--panel-hover);}
+  .topbtn svg{width:14px; height:14px; flex:none;}
+
+  .timerbox{
+    display:flex; align-items:center; gap:8px;
+    background:var(--panel); border:1px solid var(--border); border-radius:8px;
+    padding:6px 10px;
+  }
+  .timerbox .tval{font-family:var(--mono); font-size:1rem; font-weight:700; min-width:58px; text-align:center;}
+  .timerbox.running .tval{color:var(--accent-text);}
+  .timerbox .tbtn{
+    background:none; border:none; color:var(--text-dim); cursor:pointer; padding:4px; display:flex;
+  }
+  .timerbox .tbtn:hover{color:var(--text);}
+  .timerbox .tbtn svg{width:15px;height:15px;}
+  .schedbadge{
+    font-family:var(--mono); font-size:0.72rem; color:var(--text-faint); padding-left:6px; border-left:1px solid var(--border);
+  }
+  .schedbadge b{color:var(--amber-text);}
+
+  /* ===================== Layout ===================== */
+  .shell{display:flex; min-height:calc(100vh - 53px);}
+
+  nav.toc{
+    width:280px; flex:none; position:sticky; top:53px; height:calc(100vh - 53px);
+    overflow-y:auto; border-right:1px solid var(--border); background:var(--bg-elev);
+    padding:14px 10px 40px;
+  }
+  nav.toc::-webkit-scrollbar{width:8px;}
+  nav.toc::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+
+  .toc-group-label{
+    font-size:0.68rem; font-weight:700; color:var(--text-faint); letter-spacing:.04em;
+    padding:10px 10px 4px; margin-top:6px;
+  }
+  .toc-group-label:first-child{margin-top:0;}
+
+  .toc-item{
+    display:flex; align-items:flex-start; gap:9px;
+    padding:8px 10px; border-radius:8px; cursor:pointer; margin-bottom:2px;
+    border:1px solid transparent;
+  }
+  .toc-item:hover{background:var(--panel-hover);}
+  .toc-item .dot{
+    width:8px; height:8px; border-radius:50%; margin-top:5px; flex:none;
+    background:var(--border);
+  }
+  .toc-item .tlabel{display:flex; flex-direction:column; gap:1px; min-width:0;}
+  .toc-item .ttime{font-family:var(--mono); font-size:0.68rem; color:var(--text-faint);}
+  .toc-item .ttitle{font-size:0.82rem; font-weight:600; color:var(--text-dim); line-height:1.3;}
+
+  .toc-item.viewing{background:var(--panel); border-color:var(--border);}
+  .toc-item.viewing .ttitle{color:var(--text);}
+  .toc-item.viewing .dot{background:var(--blue);}
+
+  .toc-item.scheduled .ttime{color:var(--amber-text); font-weight:700;}
+  .toc-item.scheduled::after{
+    content:"now"; margin-left:auto; align-self:center; font-family:var(--mono);
+    font-size:0.62rem; color:var(--amber-text); background:var(--amber-soft);
+    padding:2px 6px; border-radius:5px; font-weight:700; letter-spacing:.03em;
+  }
+
+  main.content{flex:1; min-width:0; padding:26px 36px 130px; max-width:980px;}
+
+  .scenario{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 16px; margin-bottom:22px; font-size:0.86rem; color:var(--text-dim);
+  }
+  .scenario b{color:var(--text);}
+
+  /* ===================== Section cards ===================== */
+  section.demo-section{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    margin-bottom:16px; overflow:hidden; scroll-margin-top:70px;
+  }
+  .sec-head{
+    display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer;
+    border-left:4px solid var(--phase-color, var(--border));
+  }
+  .sec-head:hover{background:var(--panel-hover);}
+  .sec-time{font-family:var(--mono); font-size:0.78rem; color:var(--text-faint); flex:none; width:88px;}
+  .sec-title{font-weight:700; font-size:0.98rem; flex:1; min-width:0;}
+  .sec-pill{
+    font-size:0.66rem; font-weight:700; letter-spacing:.03em; padding:3px 8px; border-radius:6px;
+    color:var(--phase-text); background:var(--phase-soft); flex:none;
+  }
+  .chevron{width:16px; height:16px; flex:none; color:var(--text-faint); transition:transform .15s ease;}
+  section.demo-section.collapsed .chevron{transform:rotate(-90deg);}
+  section.demo-section.collapsed .sec-body{display:none;}
+
+  .sec-body{padding:4px 16px 18px;}
+
+  .block{margin:12px 0; padding-left:14px; border-left:3px solid var(--border);}
+  .block.do{border-color:var(--amber);}
+  .block.say{border-color:var(--blue);}
+  .block-tag{
+    font-family:var(--mono); font-size:0.66rem; font-weight:700; letter-spacing:.05em;
+    color:var(--text-faint); margin-bottom:5px; display:block;
+  }
+  .block.do .block-tag{color:var(--amber-text);}
+  .block.say .block-tag{color:var(--blue-text);}
+  .block p{margin:0 0 8px; font-size:0.95rem; color:var(--text);}
+  .block.say p{font-size:1.08rem; line-height:1.65;}
+  .block p:last-child{margin-bottom:0;}
+
+  blockquote.line{
+    margin:10px 0; padding:10px 14px; border-radius:8px; font-size:1.05rem; line-height:1.55;
+    border-left:3px solid var(--border); background:var(--bg-elev);
+  }
+  blockquote.line .who{
+    display:block; font-family:var(--mono); font-size:0.66rem; font-weight:700; letter-spacing:.04em;
+    margin-bottom:4px;
+  }
+  blockquote.line.caller{border-color:var(--blue);}
+  blockquote.line.caller .who{color:var(--blue-text);}
+  blockquote.line.agent{border-color:var(--green);}
+  blockquote.line.agent .who{color:var(--green-text);}
+
+  .refs{margin-top:10px; display:flex; flex-wrap:wrap; gap:8px;}
+  .refpill{
+    font-size:0.74rem; padding:5px 10px; border-radius:20px; background:var(--bg-elev);
+    border:1px solid var(--border); color:var(--text-dim);
+  }
+  .refpill:hover{color:var(--text); border-color:var(--text-faint); text-decoration:none;}
+
+  .callout{
+    margin:12px 0; padding:11px 13px; border-radius:8px; font-size:0.88rem; line-height:1.5;
+    background:var(--accent-soft); border:1px solid var(--accent); color:var(--text);
+  }
+  .callout b{color:var(--accent-text);}
+
+  /* Q&A */
+  .qa-item{border:1px solid var(--border); border-radius:9px; margin-bottom:9px; overflow:hidden;}
+  .qa-q{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:11px 14px; cursor:pointer; font-weight:600; font-size:0.9rem; background:var(--bg-elev);
+  }
+  .qa-q:hover{background:var(--panel-hover);}
+  .qa-a{padding:12px 14px; font-size:0.88rem; color:var(--text-dim); line-height:1.55; display:none;}
+  .qa-item.open .qa-a{display:block;}
+  .qa-item.open .chevron{transform:rotate(-90deg);}
+
+  /* Presenter notes */
+  .note-item{
+    padding:12px 14px; border-radius:9px; margin-bottom:9px;
+    background:var(--violet-soft); border:1px solid var(--violet);
+  }
+  .note-item b{color:var(--violet-text);}
+  .note-item p{margin:4px 0 0; font-size:0.88rem; color:var(--text); line-height:1.55;}
+
+  /* Floating nav */
+  .floatnav{
+    position:fixed; bottom:20px; right:26px; display:flex; gap:8px; z-index:40;
+  }
+  .fnbtn{
+    display:flex; align-items:center; justify-content:center; width:42px; height:42px;
+    border-radius:50%; background:var(--panel); border:1px solid var(--border); color:var(--text);
+    cursor:pointer; box-shadow:var(--shadow);
+  }
+  .fnbtn:hover{background:var(--panel-hover);}
+  .fnbtn svg{width:18px; height:18px;}
+  .fnbtn:disabled{opacity:.35; cursor:default;}
+</style>
+</head>
+<body data-theme="dark">
+<header class="topbar">
+  <div class="brand">
+    <div class="t1">JCI Central Station Operations — Agent Copilot</div>
+    <div class="t2">Scene 2 · Active Alarm Exception · Caller <b>Cameron Loyal</b> → Agent <b>Zach</b></div>
+  </div>
+
+  <div class="timerbox" id="timerbox">
+    <button class="tbtn" id="timerToggle" title="Start / pause">
+      <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <span class="tval" id="timerVal">00:00</span>
+    <button class="tbtn" id="timerReset" title="Reset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+    </button>
+    <span class="schedbadge" id="schedBadge">not started</span>
+  </div>
+
+  <button class="topbtn" id="expandAllBtn">Expand all</button>
+  <button class="topbtn" id="collapseAllBtn">Collapse all</button>
+
+  <button class="topbtn" id="themeToggle">
+    <svg id="themeIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-7.14-7.14c-.44-.06-.9-.1-1.36-.1z"/></svg>
+    <span id="themeLabel">Dark</span>
+  </button>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc"></nav>
+  <main class="content" id="content">
+    <div class="scenario">
+      <b>Setup:</b> Cameron Loyal calls to place JCI Distribution Center 12's fire alarm system (4400 Miller Rd, Dearborn, MI · CS #CS-88214-A) on test today, 8:00–12:00. The Virtual Agent validates his PIC, detects an active alarm on zone 4, <b>correctly refuses</b> to schedule the test, and transfers to Zach with reason code <b>Active Alarm Exception</b>. Register: "here's how you'd operate this," not "here's why we're better."
+    </div>
+    <div id="sections"></div>
+
+    <section class="demo-section" id="sec-qa" data-phase="blue">
+      <div class="sec-head" onclick="toggleSection('sec-qa')">
+        <span class="sec-time">—</span>
+        <span class="sec-title">Optional Q&amp;A bridges</span>
+        <span class="sec-pill">ON DEMAND</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="sec-body" id="qaBody"></div>
+    </section>
+
+    <section class="demo-section" id="sec-notes" data-phase="violet">
+      <div class="sec-head" onclick="toggleSection('sec-notes')">
+        <span class="sec-time">—</span>
+        <span class="sec-title">Presenter notes</span>
+        <span class="sec-pill">READ FIRST</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="sec-body" id="notesBody"></div>
+    </section>
+  </main>
+</div>
+
+<div class="floatnav">
+  <button class="fnbtn" id="prevBtn" title="Previous section">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button class="fnbtn" id="nextBtn" title="Next section">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+</div>
+
+<script>
+/* ============ Content data ============ */
+const PHASE = {
+  frame:   {label:"FRAME",        color:"var(--text-faint)", soft:"var(--panel-hover)", text:"var(--text-dim)"},
+  call:    {label:"LIVE CALL",    color:"var(--amber)", soft:"var(--amber-soft)", text:"var(--amber-text)"},
+  handoff: {label:"HANDOFF",      color:"var(--blue)",  soft:"var(--blue-soft)",  text:"var(--blue-text)"},
+  knowledge:{label:"KNOWLEDGE",   color:"var(--blue)",  soft:"var(--blue-soft)",  text:"var(--blue-text)"},
+  arch:    {label:"ARCHITECTURE", color:"var(--violet)",soft:"var(--violet-soft)",text:"var(--violet-text)"},
+  wrap:    {label:"WRAP-UP",      color:"var(--green)", soft:"var(--green-soft)", text:"var(--green-text)"},
+  close:   {label:"CLOSE",        color:"var(--violet)",soft:"var(--violet-soft)",text:"var(--violet-text)"}
+};
+
+const SECTIONS = [
+{id:"s1", start:0, end:90, time:"0:00–1:30", title:"Set the frame", phase:"frame", blocks:[
+  {k:"say", tag:"SAY", p:[
+    "Before we start clicking around, I want to frame what you're about to see.",
+    "I don't want to demonstrate Agent Copilot as a chatbot sitting next to Zach. That's not the interesting part.",
+    "What I want you to watch is how Genesys carries context through the interaction — starting from a decision the automation made correctly.",
+    "We're going to start with Cameron calling in to place a fire alarm system on test. The self-service assistant is going to do exactly what it's supposed to do: notice there's an active alarm on this account and refuse to schedule the test. That's not a bot failing — that's the bot doing its job. What matters is what happens on the other side of that handoff.",
+    "Once Zach receives the call, we'll look at four things: what context survives the transfer — including what deliberately doesn't; whether Genesys can surface knowledge from what Cameron is actually saying, without Zach searching; what happens when Zach searches himself; and what Copilot does with the after-call work.",
+    "So this is one interaction lifecycle, not four disconnected AI features."
+  ]}
+]},
+
+{id:"s2", start:90, end:270, time:"1:30–4:30", title:"Cameron and the Virtual Agent", phase:"call", blocks:[
+  {k:"do", tag:"DO", p:["Start the customer interaction as Cameron Loyal. Let the Virtual Agent validate the PIC, confirm the requested window, and run its eligibility check. Eligibility check detects the active alarm. Virtual Agent explains it in plain language and transfers with reason code Active Alarm Exception."]},
+  {k:"quote", who:"caller", text:"I need to schedule a test for my fire alarm system at Distribution Center 12 — sometime this morning if I can."},
+  {k:"say", tag:"SAY", p:[
+    "Watch what just happened — the assistant didn't apologize, and it didn't fail. It told Cameron exactly what was happening and why, then handed off on purpose, with a reason code attached to the interaction.",
+    "That distinction matters more than it sounds like it should. A system that's currently in alarm doesn't get placed on test by a bot — it goes to a person. Your own rules require that. We didn't build around that rule, we built to enforce it.",
+    "The experience we want to avoid is Zach picking up and asking, \"How can I help you?\" — and Cameron re-explaining the whole thing, PIC and all. So let's hand this to Zach and see what he actually gets."
+  ]}
+]},
+
+{id:"s3", start:270, end:420, time:"4:30–7:00", title:"Transfer summary in Agent Workspace", phase:"handoff", blocks:[
+  {k:"do", tag:"DO", p:["Accept the interaction as Zach in Agent Workspace. Open the Agent Copilot panel. Pause on the Transfer Summary card (sparkle icon — Reason contacted / Summary / Resolution)."]},
+  {k:"say", tag:"SAY", p:[
+    "Here's the first thing I wanted you to see. Zach hasn't asked Cameron a single question yet, and he already knows: this is Distribution Center 12, fire alarm system, Cameron wants a test window this morning, and the reason he's looking at this call at all is an active alarm on the panel.",
+    "This is Copilot giving him context from what happened before he was ever involved. The obvious win is caller experience — Cameron doesn't repeat anything. The technical one is that this context travels with the Genesys interaction itself, natively — not a side app copying a bot transcript somewhere."
+  ], refs:[{label:"Transfer summary docs", url:"https://help.genesys.cloud/articles/agent-copilot-supported-transfer-summaries/"}]},
+  {k:"do", tag:"DO", p:["Point to the screen-pop landing tab alongside the Copilot panel — Site & System, Caller & Request, Why this is with you."]},
+  {k:"say", tag:"SAY", p:[
+    "Notice one thing that's not here. Cameron gave the Virtual Agent his PIC to authenticate. What carried forward to Zach isn't the code — it's just a validation flag: PIC valid, yes or no. Zach never sees the raw PIC. That's a deliberate design choice, not an omission. The self-service layer authenticates; the agent layer inherits the result, not the credential.",
+    "So instead of asking who Cameron is and what he needs, Zach can open with:"
+  ]},
+  {k:"quote", who:"agent", text:"Hi Cameron, this is Zach with Central Station Operations. I can see there's an active alarm showing on your panel at Distribution Center 12, which is why you were transferred to me — you don't need to re-explain any of that."},
+  {k:"say", tag:"SAY", p:["That's a small difference in the desktop. It's a very large difference in how Cameron experiences the handoff — and it shows up first in the transcript sentiment."]}
+]},
+
+{id:"s4", start:420, end:690, time:"7:00–11:30", title:"Real-time knowledge surfacing", phase:"knowledge", blocks:[
+  {k:"do", tag:"DO", p:["Continue the live call. Cameron responds with frustration — he's already explained this once today. Pause briefly on Copilot; note the de-escalation guidance that surfaces without Zach asking for it."]},
+  {k:"quote", who:"caller", text:"Okay, good, because honestly I don't know how many times I've explained this today, and this is getting very frustrating."},
+  {k:"say", tag:"SAY", p:["Notice Copilot didn't wait for Zach to search \"how do I handle an upset caller.\" Cameron said something conversational and mildly frustrated, and Copilot surfaced coaching content on its own — acknowledge the frustration, confirm what's already been collected. This isn't just policy lookup. It's reading the moment."]},
+  {k:"do", tag:"DO", p:["Zach acknowledges the frustration, confirms the site. Cameron explains what he actually wants. Pause for the knowledge recommendation — open the surfaced article, Active Alarm Exception."]},
+  {k:"quote", who:"caller", text:"I just wanted to schedule an appointment to put it on test for a few hours, and now I'm told there's some kind of alarm going on that's stopping that."},
+  {k:"say", tag:"SAY", p:[
+    "Now watch this one closely — it's the real proof point. Cameron didn't say \"active alarm exception.\" He didn't name a policy. He described the problem the way an actual person describes a problem.",
+    "Copilot used conversation context, not a keyword match, to bring back the article that tells Zach exactly what to do: confirm the alarm is still active, explain why the test can't be scheduled yet, get the zone number and when it was first noticed, flag it to alarm response, and offer to reschedule once it clears."
+  ]},
+  {k:"do", tag:"DO", p:["Point to the highlighted \"What to do\" section rather than the full article body."]},
+  {k:"say", tag:"SAY", p:[
+    "Zach doesn't have to read a full procedure document mid-call. Genesys highlights the section relevant to what Cameron just said.",
+    "And there's an architecture point behind this that matters for your team specifically: this isn't an ungrounded model improvising a central-station procedure. The pattern is conversation context, then retrieve your governed content, then a grounded answer. The question worth asking is where that answer came from, who authored it, and whether you can control exactly what's in it. Every article behind this scene was authored by JCI's own content, not generated by the model."
+  ], refs:[{label:"Knowledge surfacing docs", url:"https://help.genesys.cloud/?p=341926"}]}
+]},
+
+{id:"s5", start:690, end:870, time:"11:30–14:30", title:"Agent-initiated knowledge search", phase:"knowledge", blocks:[
+  {k:"do", tag:"DO", p:["Cameron mentions this isn't the first time. Rather than waiting for him to ask for a supervisor, have Zach proactively open Copilot's knowledge search and type a query himself."]},
+  {k:"quote", who:"caller", text:"I don't understand why this keeps happening. This happened last month too."},
+  {k:"say", tag:"SAY", p:["I'm deliberately switching patterns here. Sometimes the automatic recommendation is exactly what Zach needs. Sometimes he needs to go digging before the caller even asks — because he heard something worth investigating. Zach can manually search the same knowledge environment from inside Copilot, in his own words, not Cameron's."]},
+  {k:"do", tag:"DO", p:["Search something like: recurring alarm same zone past 30 days. Let the search return the same governed article with a different section surfaced — the escalation criteria."]},
+  {k:"say", tag:"SAY", p:[
+    "Two things here. I've got the underlying knowledge result — the same governed article, surfaced from a different angle than Cameron's own words. And Copilot can generate a short answer from that result and put it above the source, so Zach doesn't have to re-read the whole article to get his footing.",
+    "That's the balance to evaluate: speed from generative AI, but grounding and traceability from your own content. Zach can still open the article and check exactly where the guidance came from."
+  ]},
+  {k:"do", tag:"DO", p:["A little later in the call, Cameron explicitly asks for a supervisor."]},
+  {k:"quote", who:"caller", text:"I think I'd like to just talk to a supervisor about the fact that this keeps happening on this account."},
+  {k:"say", tag:"SAY", p:["And here's the callback moment. Zach already flagged this pattern on his own initiative — now Cameron is asking for the same thing Copilot already pointed him toward. That's the same governed content answering two different entry points into the conversation, one agent-initiated, one caller-initiated."]}
+]},
+
+{id:"s6", start:870, end:1110, time:"14:30–18:30", title:"Explain Genesys Cloud Knowledge", phase:"arch", blocks:[
+  {k:"say", tag:"SAY", p:[
+    "Since we're looking at knowledge, let me explain what's behind it — this is usually where the architecture conversation gets interesting for your team.",
+    "Every article Zach just used was authored natively in the Genesys Knowledge Workbench. You can author it there, organize it, publish it, test it, get feedback on individual articles, and see how each one performs."
+  ], refs:[{label:"Knowledge Workbench docs", url:"https://help.genesys.cloud/articles/about-the-knowledge-workbench-v2/"}]},
+  {k:"callout", html:"The same knowledge base also feeds the Virtual Agent's self-service layer — it's not a separate content set for bots versus agents. That's the point to underline for this evaluation: self-service context and agent context originate on the <b>same platform</b> and land on the <b>same interaction record</b>."},
+  {k:"say", tag:"SAY", p:[
+    "I also want to be precise about what's native versus connected. Everything Zach used today was authored directly in the Knowledge Workbench. But if JCI has content elsewhere, Genesys has built-in Knowledge Workbench connectors for Salesforce Knowledge and ServiceNow Knowledge — configured as external sources and synchronized into the same experience."
+  ], refs:[{label:"Salesforce / ServiceNow connectors", url:"https://help.genesys.cloud/?p=346235"}]},
+  {k:"say", tag:"SAY", p:[
+    "There's also a newer path, Knowledge Fabric, introduced in 2026. The currently documented native source is SharePoint — Genesys indexes selected SharePoint content and makes it available to both Agent Copilot and the Virtual Agent."
+  ], refs:[{label:"Knowledge Fabric overview", url:"https://help.genesys.cloud/articles/knowledge-fabric-overview/"}]},
+  {k:"say", tag:"SAY", p:[
+    "And this is where governance becomes the real conversation. Zach may be allowed to see an internal alarm-response runbook a customer-facing Virtual Agent should never retrieve. Genesys supports separate source scopes for exactly that — internal-plus-public for agents, public-only for the Virtual Agent."
+  ], refs:[{label:"Internal-only access controls", url:"https://help.genesys.cloud/faqs/how-can-i-manage-access-in-the-knowledge-fabric-for-internal-only-information/"}]}
+]},
+
+{id:"s7", start:1110, end:1290, time:"18:30–21:30", title:"Finish the call", phase:"call", blocks:[
+  {k:"do", tag:"DO", p:["Return to the live call. Zach confirms both actions: zone 4 flagged for alarm response verification, and a supervisor callback logged for the recurring pattern. He tentatively reschedules the test for later today. End the interaction."]},
+  {k:"quote", who:"caller", text:"That really helps, thank you so much. I feel better now that you explained it clearly — this was a much better experience than last time I called about this."},
+  {k:"say", tag:"SAY", p:["Now we're moving from assistance during the call to assistance after the call. This part is less flashy, but it's often the easiest to justify economically. Zach just spent several minutes actively working an active-alarm exception — verifying the caller, gathering zone details, flagging alarm response, logging a supervisor callback, and rescheduling a test. A lot of contact centers ask agents to stop and reconstruct all of that for wrap-up. Let's see what Copilot captured."]}
+]},
+
+{id:"s8", start:1290, end:1410, time:"21:30–23:30", title:"Summary and predictive wrap-up", phase:"wrap", blocks:[
+  {k:"do", tag:"DO", p:["Show the generated interaction summary — Reason Contacted and Resolution. Show the predicted wrap-up code."]},
+  {k:"say", tag:"SAY", p:["Copilot has generated the summary of the call, and it's suggesting the reason Cameron contacted us and how it was resolved. Here's the predicted wrap-up code: Active Alarm – Test Rescheduled."], refs:[{label:"Summary & wrap-up docs", url:"https://help.genesys.cloud/?p=341926"}]},
+  {k:"callout", html:"This call genuinely has more than one legitimate disposition at once — the test got rescheduled, the zone got flagged to alarm response, a supervisor callback got requested, and Cameron ended satisfied. We built <b>six</b> wrap-up codes for this scene precisely because one generic \"active alarm\" code would have hidden that. Copilot predicts the primary one; the others are real, defensible alternates, not noise."},
+  {k:"do", tag:"DO", p:["Select the suggested wrap-up code."]},
+  {k:"say", tag:"SAY", p:["Genesys is suggesting the wrap-up. Zach still selects it. We're using AI to reduce the work of figuring out the likely disposition, but not quietly writing to a business record behind the agent's back — and picking a code here before the after-call-work timer runs out is also what keeps a default timeout code from landing on this interaction instead.", "Multiply a few saved seconds of after-call work across every exception transfer your central station handles, and this stops being a UI nicety. It's an operational-efficiency conversation."]}
+]},
+
+{id:"s9", start:1410, end:1500, time:"23:30–25:00", title:"Close with the architecture", phase:"close", blocks:[
+  {k:"say", tag:"SAY", p:[
+    "So if I reduce the last twenty-five minutes to one picture, this is what I want you to remember.",
+    "Cameron called in, and self-service correctly refused to schedule a test on a system with an active alarm — that refusal was the automation working as designed, not a gap papered over with AI.",
+    "When it handed the call to Zach, the context came with it — including the deliberate choice about what didn't come with it, like the raw PIC.",
+    "During the live call, Copilot used the conversation itself to surface the right guidance twice, without Zach searching — and when he wanted to get ahead of a pattern Cameron hadn't fully named yet, he searched the same content himself and got a grounded answer with a visible source.",
+    "When the call ended, Copilot generated the summary and predicted the disposition out of several legitimate options — and Zach still made the call."
+  ]},
+  {k:"callout", html:"Virtual Agent → correct refusal, with a reason code → context to the agent → Zach → shared, governed knowledge → resolution → after-call work. Every piece sits on the <b>same Genesys Cloud interaction record</b> — the honest answer to \"how is this different,\" more than any single feature comparison."},
+  {k:"say", tag:"SAY", p:[
+    "For this evaluation, that's also how I'd suggest testing it. Does the handoff preserve the right context, and correctly withhold what shouldn't carry forward? Does knowledge surface reliably against the way your callers and agents actually talk, not just the way the policy is titled? Can an agent recover when the automatic recommendation isn't enough? Can you govern what a customer-facing bot sees versus an agent? Can you tell whether agents are actually using the recommendations? Does the after-call output match dispositions you'd actually use — not one flattering catch-all code?",
+    "If those hold up against your calls, your content, and your operating model, we've proven something more meaningful than a scripted AI demo."
+  ]}
+]}
+];
+
+const QA = [
+  {q:"Can the summary or predicted disposition reach our system of record?", a:"Yes. Genesys documents a conversation summarization API that downstream systems — including a CRM or ticketing platform — can query. For JCI specifically, this sits alongside the eighteen fields your Virtual Agent flow already posts back on transfer; the summary and wrap-up prediction are additional context on top of that payload, not a replacement for it.", ref:{label:"Summary API docs", url:"https://help.genesys.cloud/?p=341926"}},
+  {q:"How long is the Copilot summary retained?", a:"Genesys documents Copilot summaries as available for 10 days by default, with persistent storage available when Speech and Text Analytics is enabled. If longer retention matters, raise it in the same conversation as Speech and Text Analytics generally — don't assume 10 days is sufficient.", ref:{label:"Retention docs", url:"https://help.genesys.cloud/?p=341926"}},
+  {q:"What happens if Zach has to transfer this to another agent?", a:"Supported behavior depends on transfer type, Copilot assignment, and configuration on both queues. Agent-to-queue blind transfer and consult-transfer are supported, and the original interaction language carries through; Genesys documents the configuration requirements on both sides of that transfer.", ref:{label:"Transfer summary docs", url:"https://help.genesys.cloud/articles/agent-copilot-supported-transfer-summaries/"}},
+  {q:"Does this only work with content authored directly in Genesys?", a:"No. Today's scene used native Knowledge Workbench content, but Genesys has built-in connectors for Salesforce Knowledge and ServiceNow Knowledge, and a newer Knowledge Fabric path for SharePoint. If either is a system of record for JCI, the right conversation is which content syncs and which experiences can use it — not a wholesale migration.", ref:{label:"Connector docs", url:"https://help.genesys.cloud/?p=346235"}},
+  {q:"Can we see whether agents are actually using this, once it's live?", a:"Yes. The Agent Copilot performance dashboard reports on recommendations and searches, including content presented, opened, copied, and rated. That's the view Mario asked for on the supervisor and manager side.", ref:{label:"Performance dashboard docs", url:"https://help.genesys.cloud/articles/gaa-dashboard/"}}
+];
+
+const NOTES = [
+  {t:"Frame the refusal before you show it.", d:"The single most important sentence in this scene is spoken before the transfer happens: \"we deliberately built this to refuse certain requests.\" If that lands, the transfer reads as good design. Skip it, and the transfer can read as the bot failing and Copilot cleaning up after it."},
+  {t:"The PIC-exclusion moment is your natural pause point.", d:"When Miguel or Ulysses notices the raw PIC isn't in the screen pop, stop and let them ask about it. That's a stronger security conversation than volunteering it unprompted."},
+  {t:"Keep the Knowledge section (14:30–18:30) intentionally architectural.", d:"It's the natural place for this room to interrupt with questions about Salesforce, ServiceNow, SharePoint, governance, or data residency without derailing Cameron's call."},
+  {t:"Don't let the six wrap-up codes read as a flaw.", d:"If someone asks why there isn't one obvious answer, that's the point — a real exception call has more than one legitimate disposition, and predicting the strongest one while leaving the others visible is more honest than a single catch-all code."},
+  {t:"This is knowledge-transfer register, not a pitch.", d:"Mario asked for this session to show JCI how they'd operate the platform, not to be sold to. Let the capability carry the moment."}
+];
+
+/* ============ Render ============ */
+const sectionsEl = document.getElementById("sections");
+const tocEl = document.getElementById("toc");
+
+function fmtTime(s){
+  const m = Math.floor(s/60), sec = s%60;
+  return (m<10?"0":"")+m+":"+(sec<10?"0":"")+sec;
+}
+
+SECTIONS.forEach(sec=>{
+  const ph = PHASE[sec.phase];
+  const card = document.createElement("section");
+  card.className = "demo-section";
+  card.id = sec.id;
+  card.style.setProperty("--phase-color", ph.color);
+  card.style.setProperty("--phase-soft", ph.soft);
+  card.style.setProperty("--phase-text", ph.text);
+
+  let bodyHTML = "";
+  sec.blocks.forEach(b=>{
+    if(b.k==="do" || b.k==="say"){
+      bodyHTML += `<div class="block ${b.k}"><span class="block-tag">${b.tag}</span>`;
+      b.p.forEach(t=> bodyHTML += `<p>${t}</p>`);
+      if(b.refs){
+        bodyHTML += `<div class="refs">`;
+        b.refs.forEach(r=> bodyHTML += `<a class="refpill" href="${r.url}" target="_blank" rel="noopener">${r.label}</a>`);
+        bodyHTML += `</div>`;
+      }
+      bodyHTML += `</div>`;
+    } else if(b.k==="quote"){
+      const who = b.who==="caller" ? "CAMERON · CALLER" : "ZACH · AGENT";
+      bodyHTML += `<blockquote class="line ${b.who}"><span class="who">${who}</span>${b.text}</blockquote>`;
+    } else if(b.k==="callout"){
+      bodyHTML += `<div class="callout">${b.html}</div>`;
+    }
+  });
+
+  card.innerHTML = `
+    <div class="sec-head" onclick="toggleSection('${sec.id}')">
+      <span class="sec-time">${sec.time}</span>
+      <span class="sec-title">${sec.title}</span>
+      <span class="sec-pill">${ph.label}</span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="sec-body">${bodyHTML}</div>
+  `;
+  sectionsEl.appendChild(card);
+
+  const tocItem = document.createElement("div");
+  tocItem.className = "toc-item";
+  tocItem.dataset.target = sec.id;
+  tocItem.onclick = ()=> jumpTo(sec.id);
+  tocItem.innerHTML = `<span class="dot"></span><span class="tlabel"><span class="ttime">${sec.time}</span><span class="ttitle">${sec.title}</span></span>`;
+  tocEl.appendChild(tocItem);
+});
+
+// Q&A group in TOC + body
+const qaLabel = document.createElement("div");
+qaLabel.className = "toc-group-label"; qaLabel.textContent = "ON DEMAND";
+tocEl.appendChild(qaLabel);
+const qaToc = document.createElement("div");
+qaToc.className = "toc-item"; qaToc.dataset.target = "sec-qa";
+qaToc.onclick = ()=> jumpTo("sec-qa");
+qaToc.innerHTML = `<span class="dot"></span><span class="tlabel"><span class="ttime">Q&amp;A</span><span class="ttitle">Bridges</span></span>`;
+tocEl.appendChild(qaToc);
+
+const notesToc = document.createElement("div");
+notesToc.className = "toc-item"; notesToc.dataset.target = "sec-notes";
+notesToc.onclick = ()=> jumpTo("sec-notes");
+notesToc.innerHTML = `<span class="dot"></span><span class="tlabel"><span class="ttime">Notes</span><span class="ttitle">Presenter notes</span></span>`;
+tocEl.appendChild(notesToc);
+
+const qaBody = document.getElementById("qaBody");
+QA.forEach((item,i)=>{
+  const el = document.createElement("div");
+  el.className = "qa-item";
+  el.innerHTML = `
+    <div class="qa-q" onclick="this.parentElement.classList.toggle('open')">
+      <span>${item.q}</span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="qa-a"><p style="margin:0 0 8px;">${item.a}</p><div class="refs"><a class="refpill" href="${item.ref.url}" target="_blank" rel="noopener">${item.ref.label}</a></div></div>
+  `;
+  qaBody.appendChild(el);
+});
+
+const notesBody = document.getElementById("notesBody");
+NOTES.forEach(n=>{
+  const el = document.createElement("div");
+  el.className = "note-item";
+  el.innerHTML = `<b>${n.t}</b><p>${n.d}</p>`;
+  notesBody.appendChild(el);
+});
+
+/* ============ Collapse / expand ============ */
+function toggleSection(id){
+  document.getElementById(id).classList.toggle("collapsed");
+}
+document.getElementById("expandAllBtn").onclick = ()=>{
+  document.querySelectorAll(".demo-section").forEach(s=>s.classList.remove("collapsed"));
+};
+document.getElementById("collapseAllBtn").onclick = ()=>{
+  document.querySelectorAll(".demo-section").forEach(s=>s.classList.add("collapsed"));
+};
+
+/* ============ Theme toggle ============ */
+const themeToggle = document.getElementById("themeToggle");
+const themeLabel = document.getElementById("themeLabel");
+const themeIcon = document.getElementById("themeIcon");
+const SUN = '<path d="M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M18.4 5.6l1.4-1.4M4.2 19.8l1.4-1.4"/><circle cx="12" cy="12" r="5"/>';
+const MOON = '<path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-7.14-7.14c-.44-.06-.9-.1-1.36-.1z"/>';
+themeToggle.onclick = ()=>{
+  const html = document.documentElement;
+  const isLight = html.getAttribute("data-theme") === "light";
+  html.setAttribute("data-theme", isLight ? "dark" : "light");
+  themeLabel.textContent = isLight ? "Dark" : "Light";
+  themeIcon.innerHTML = isLight ? MOON : SUN;
+  themeIcon.setAttribute("fill", isLight ? "currentColor" : "none");
+  themeIcon.setAttribute("stroke", isLight ? "none" : "currentColor");
+  themeIcon.setAttribute("stroke-width", isLight ? "0" : "2");
+};
+
+/* ============ Timer ============ */
+let elapsed = 0, running = false, tick = null;
+const timerVal = document.getElementById("timerVal");
+const timerbox = document.getElementById("timerbox");
+const playIcon = document.getElementById("playIcon");
+const schedBadge = document.getElementById("schedBadge");
+const PLAY = '<path d="M8 5v14l11-7z"/>';
+const PAUSE = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+
+function updateTimerDisplay(){
+  timerVal.textContent = fmtTime(elapsed);
+  const cur = SECTIONS.find(s=> elapsed>=s.start && elapsed<s.end) || (elapsed>=1500 ? SECTIONS[SECTIONS.length-1] : null);
+  document.querySelectorAll(".toc-item").forEach(t=>t.classList.remove("scheduled"));
+  if(running && cur){
+    const el = document.querySelector(`.toc-item[data-target="${cur.id}"]`);
+    if(el) el.classList.add("scheduled");
+    schedBadge.innerHTML = `on script: <b>${cur.time}</b>`;
+  } else if(!running && elapsed===0){
+    schedBadge.textContent = "not started";
+  } else {
+    schedBadge.innerHTML = `paused at <b>${fmtTime(elapsed)}</b>`;
+  }
+}
+
+document.getElementById("timerToggle").onclick = ()=>{
+  running = !running;
+  timerbox.classList.toggle("running", running);
+  playIcon.innerHTML = running ? PAUSE : PLAY;
+  if(running){
+    tick = setInterval(()=>{ elapsed++; updateTimerDisplay(); }, 1000);
+  } else {
+    clearInterval(tick);
+  }
+  updateTimerDisplay();
+};
+document.getElementById("timerReset").onclick = ()=>{
+  running = false; elapsed = 0; clearInterval(tick);
+  timerbox.classList.remove("running");
+  playIcon.innerHTML = PLAY;
+  updateTimerDisplay();
+};
+updateTimerDisplay();
+
+/* ============ Scroll-spy (currently viewing) ============ */
+const allIds = [...SECTIONS.map(s=>s.id), "sec-qa", "sec-notes"];
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    const item = document.querySelector(`.toc-item[data-target="${entry.target.id}"]`);
+    if(!item) return;
+    if(entry.isIntersecting) item.classList.add("viewing");
+    else item.classList.remove("viewing");
+  });
+}, {rootMargin: "-15% 0px -70% 0px"});
+allIds.forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) observer.observe(el);
+});
+
+/* ============ Jump / prev / next ============ */
+function jumpTo(id){
+  const el = document.getElementById(id);
+  el.classList.remove("collapsed");
+  el.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function currentIndex(){
+  const viewing = document.querySelector(".toc-item.viewing");
+  const id = viewing ? viewing.dataset.target : allIds[0];
+  return allIds.indexOf(id);
+}
+document.getElementById("nextBtn").onclick = ()=>{
+  const i = Math.min(currentIndex()+1, allIds.length-1);
+  jumpTo(allIds[i]);
+};
+document.getElementById("prevBtn").onclick = ()=>{
+  const i = Math.max(currentIndex()-1, 0);
+  jumpTo(allIds[i]);
+};
+window.addEventListener("keydown", (e)=>{
+  if(e.key==="ArrowRight" || e.key==="ArrowDown") document.getElementById("nextBtn").click();
+  if(e.key==="ArrowLeft" || e.key==="ArrowUp") document.getElementById("prevBtn").click();
+});
+</script>
+</body>
+</html>
