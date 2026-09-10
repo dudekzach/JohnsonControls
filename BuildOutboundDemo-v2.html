@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCI Outbound Demo — Build Runbook</title>
+<style>
+  :root{
+    --ink:#15191e; --ink-soft:#3c4650; --line:#d8dee5; --line-soft:#e8edf2;
+    --bg:#f5f7f9; --card:#fff; --accent:#0b4f9e; --accent-soft:#eaf1fa;
+    --high:#8f1d1d; --high-bg:#fbeeee; --med:#8a5a00; --med-bg:#fdf4e3;
+    --low:#1f5c3a; --low-bg:#eaf5ee; --say:#0d3d75; --say-bg:#eef4fa;
+    --val:#7a3d00; --val-bg:#fdf1e5; --code:#2b2f36;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;line-height:1.6;}
+  .wrap{max-width:1060px;margin:0 auto;padding:32px 24px 96px;}
+  header.doc{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--accent);
+    border-radius:6px;padding:28px 30px;margin-bottom:24px;}
+  header.doc h1{font-size:1.8rem;line-height:1.25;margin:0 0 8px;letter-spacing:-0.01em;}
+  header.doc .sub{font-size:1.05rem;color:var(--ink-soft);margin:0 0 18px;}
+  .metagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 24px;
+    border-top:1px solid var(--line-soft);padding-top:16px;font-size:0.95rem;}
+  .metagrid .k{display:block;text-transform:uppercase;letter-spacing:0.06em;font-size:0.72rem;color:#6b7681;font-weight:700;}
+  section.block{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:26px 30px;margin-bottom:22px;}
+  section.step{border-left:5px solid var(--accent);}
+  h2{font-size:1.3rem;margin:0 0 4px;line-height:1.3;}
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;}
+  .h2sub{color:var(--ink-soft);font-size:0.97rem;margin:0 0 20px;padding-bottom:14px;border-bottom:1px solid var(--line-soft);}
+  h3{font-size:1.05rem;margin:24px 0 8px;}
+  h3:first-of-type{margin-top:4px;}
+  h4{font-size:0.84rem;margin:18px 0 6px;color:#5a6672;text-transform:uppercase;letter-spacing:0.06em;}
+  p{margin:0 0 14px;}
+  ul,ol{margin:0 0 14px;padding-left:22px;}
+  li{margin-bottom:7px;}
+  strong{font-weight:650;}
+  code{background:#f0f3f6;border:1px solid #dde3e9;border-radius:3px;padding:1px 5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.88em;color:var(--code);}
+  .path{background:#eef2f6;border-radius:3px;padding:2px 7px;font-size:0.9rem;font-weight:600;color:#2b3b4d;display:inline-block;}
+  .tag{display:inline-block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+    padding:2px 8px;border-radius:3px;white-space:nowrap;vertical-align:1px;}
+  .t-val{background:var(--val-bg);color:var(--val);border:1px solid #e8c9a6;}
+  .t-req{background:var(--high-bg);color:var(--high);border:1px solid #e2b6b6;}
+  .t-opt{background:var(--low-bg);color:var(--low);border:1px solid #bcdcc8;}
+  .callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:14px 18px;border-radius:0 4px 4px 0;margin:0 0 18px;}
+  .callout.warn{border-left-color:var(--high);background:var(--high-bg);}
+  .callout p:last-child{margin-bottom:0;}
+  .callout .label{display:block;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;color:var(--accent);}
+  .callout.warn .label{color:var(--high);}
+  .tablewrap{overflow-x:auto;margin:0 0 20px;border:1px solid var(--line);border-radius:5px;}
+  table{border-collapse:collapse;width:100%;min-width:620px;font-size:0.92rem;}
+  caption{text-align:left;font-size:0.89rem;color:var(--ink-soft);padding:10px 12px;border-bottom:1px solid var(--line-soft);background:#fafbfc;}
+  th,td{padding:10px 13px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft);line-height:1.5;}
+  thead th{background:#eef2f6;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:#4a5560;border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#fbfcfd;}
+  .say{background:var(--say-bg);border-left:3px solid #9db4cd;padding:12px 16px;margin:10px 0 14px;
+    border-radius:0 3px 3px 0;font-size:1rem;color:var(--say);}
+  .say b{display:block;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#5a6672;margin-bottom:5px;font-weight:700;}
+  .say p{margin:0 0 10px;}
+  .say p:last-child{margin-bottom:0;}
+  pre{background:#f7f9fa;border:1px solid #dde3e9;border-radius:4px;padding:13px 15px;overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.85rem;line-height:1.5;margin:0 0 16px;}
+  .check{list-style:none;padding-left:0;}
+  .check li{padding-left:28px;position:relative;}
+  .check li:before{content:'☐';position:absolute;left:4px;top:-1px;font-size:1.1rem;color:var(--accent);}
+  footer.doc{margin-top:8px;padding:22px 30px;background:var(--card);border:1px solid var(--line);
+    border-radius:6px;font-size:0.92rem;color:var(--ink-soft);}
+  footer.doc h3{margin-top:0;font-size:1rem;color:var(--ink);}
+  @media (max-width:640px){
+    body{font-size:16px;} .wrap{padding:18px 12px 60px;}
+    section.block,header.doc{padding:20px 16px;} header.doc h1{font-size:1.4rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <h1>Outbound Demo — Build Runbook</h1>
+  <p class="sub">Scene A from the demo strategy: agentless notification before a test window expires. Ordered configuration steps for an SC-owned Genesys Cloud org, with the talk track mapped to what you will have built. This revision adds two build steps for a flow that is already live: wiring the contact variables into the TTS actions (Step 4), and a second, purpose-built outbound flow for Answering Machine detection (Step 5).</p>
+  <div class="metagrid">
+    <div><span class="k">Target date</span><span class="v">Friday 9/11 session</span></div>
+    <div><span class="k">Build in</span><span class="v">SC-owned demo org — not the POC tenant</span></div>
+    <div><span class="k">Assets</span><span class="v">Contact list CSV and DNC CSV generated from JCI mock data</span></div>
+    <div><span class="k">Build estimate</span><span class="v">3–4 hours, plus a dry run</span></div>
+  </div>
+</header>
+
+<!-- STOP FIRST -->
+<section class="block">
+  <h2>Read This Before You Start</h2>
+  <p class="h2sub">Three things that will break the demo if you find them out on the day.</p>
+
+  <div class="callout warn">
+    <span class="label">1. Every phone number in the JCI mock data is a 555 reserved number</span>
+    <p>All the workbook numbers are in the <code>555-01xx</code> fictitious range. An agentless campaign places <strong>real calls</strong>. If you import those as the dial column, the campaign will attempt, fail, and disposition every record as unreachable — and you will be debugging pacing when the problem is the data.</p>
+    <p>The generated contact list therefore carries <code>Work_Phone</code> = <code>REPLACE_WITH_YOUR_TEST_NUMBER</code> as the dial column, and keeps the JCI number in <code>Reference_Phone</code> as a display-only field. Substitute two or three numbers you actually control — your mobile, a softphone, a colleague who has agreed to answer — before import. Duplicating the same number across several records is fine and makes the dry run faster.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="label">2. Agentless requires a Call Analysis Response Set containing a Transfer to Flow action</span>
+    <p>Genesys will reject a response set that transfers to agents, and it will equally reject one that has no Transfer to Flow action, because agentless depends on that action. Build the outbound flow <em>before</em> the response set, and the response set before the campaign. The order below is not arbitrary.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="label">3. An Architect outbound flow cannot be created without a contact list and a default wrap-up code</span>
+    <p>Both must already exist. So the real build order is: wrap-up codes → contact list → outbound flow → call analysis response set → campaign. Steps 1 through 6 follow that sequence.</p>
+  </div>
+
+  <h3>Permissions to confirm on your account first</h3>
+  <ul>
+    <li><code>Outbound &gt; Campaign &gt; Add, Delete, Edit, Search</code></li>
+    <li><code>Outbound &gt; Contactlist &gt; Search</code> · <code>Outbound &gt; Responseset &gt; View</code></li>
+    <li><code>Routing &gt; Queue &gt; Search</code> · <code>Scripter &gt; Publishedscripts &gt; View</code></li>
+    <li><code>Telephony &gt; Sites &gt; View</code> for a Site, or <code>Telephony &gt; Plugin &gt; All</code> for an Edge group</li>
+    <li>Optional but wanted here: <code>Outbound &gt; Dnclist &gt; View</code>, <code>Outbound &gt; Ruleset &gt; View</code>, <code>Outbound &gt; Callabletimeset &gt; View</code>, <code>Outbound &gt; Contactlistfilter &gt; View</code></li>
+  </ul>
+  <p><span class="tag t-val">verify</span> Also confirm the org has outbound line capacity and a usable DID for caller ID. Agentless reserves lines explicitly, so a demo org with tight trunk capacity can starve other campaigns. Two lines is plenty here.</p>
+</section>
+
+<!-- STEP 1 -->
+<section class="block step">
+  <h2><span class="num">Step 1.</span> Wrap-up Codes and Mappings</h2>
+  <p class="h2sub">First because the outbound flow will not save without a default wrap-up code.</p>
+  <p><span class="path">Admin &gt; Contact Center &gt; Wrap-up Codes</span></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:34%">Wrap-up code</th><th style="width:26%">Mapping</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>JCI — Test Extended</td><td>Right Party Contact</td><td>Terminating. Contact reached and action taken; no further attempts.</td></tr>
+        <tr><td>JCI — No Extension Needed</td><td>Right Party Contact</td><td>Terminating. Reached and declined; that is a successful outcome, not a failure.</td></tr>
+        <tr><td>JCI — Message Left</td><td>(leave unmapped)</td><td>Non-terminating so attempt controls can retry. Set by the machine-answer branch.</td></tr>
+        <tr><td>JCI — Central Station Requested</td><td>Right Party Contact</td><td>Terminating. Caller asked for a person.</td></tr>
+        <tr><td>JCI — Do Not Contact Requested</td><td>Contact Uncallable</td><td>The compliance beat. One wrap-up removes the whole contact from future dialing.</td></tr>
+        <tr><td>JCI — Wrong Number</td><td>Number Uncallable</td><td>Kills the number, not the contact.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Set the default for outbound</strong> at <span class="path">Admin &gt; Outbound &gt; Settings</span> — use <em>JCI — Message Left</em>, or set it explicitly per branch in the flow with a Set Wrap-up Code action. The latter is cleaner and is what the flow design in Step 3 does.</p>
+  <div class="callout">
+    <span class="label">Demo value</span>
+    <p>Those last two mappings are the whole compliance story in two rows. When you show the wrap-up list in the session, the point is that a disposition on one call permanently changes who the campaign is allowed to dial — without anyone editing a list.</p>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section class="block step">
+  <h2><span class="num">Step 2.</span> Contact List and DNC List</h2>
+  <p class="h2sub">Both CSVs are generated and attached. Twelve records, drawn from the JCI mock data.</p>
+
+  <h3>What is in the contact list</h3>
+  <p>Twelve sites taken from the <em>should allow</em> records in the JCI account mock data workbook — standalone fire and burglar systems only. COMBO records were deliberately excluded so the outbound story stays consistent with the band the inbound journey actually automates. That exclusion is itself a talking point.</p>
+  <p>Records span seven time zones and four state duration groups, and <code>Hours_Remaining</code> runs from 2 to 26 so contact sorting has something to demonstrate. One record, <code>JCI-010 / Walmart - Boise 1</code>, carries the hyphenated central station number <code>H62797-6122</code> straight from their data — worth pointing at, because it is the same non-standardised format problem the inbound flow normalises.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:26%">Column</th><th style="width:20%">Role in the campaign</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>Contact_ID</code></td><td>Unique identifier</td><td>Select as the ID column on import.</td></tr>
+        <tr><td><code>Work_Phone</code></td><td><strong>Dial column</strong></td><td>Replace the placeholder with numbers you control. Only this column goes in Contact List Numbers.</td></tr>
+        <tr><td><code>Reference_Phone</code></td><td>Display only</td><td>The original JCI mock number. Do <strong>not</strong> add it as a phone number type or the campaign will try to dial it.</td></tr>
+        <tr><td><code>Time_Zone</code></td><td>Required for Contactable Time Sets</td><td>IANA names. A contactable time set cannot be assigned unless the list has a timezone column. <span class="tag t-val">verify</span> the format your org accepts, or use automatic time zone mapping instead.</td></tr>
+        <tr><td><code>Test_End_Local</code>, <code>Test_End_Date</code></td><td>TTS content and sorting</td><td>ISO 8601. Date columns must be <code>yyyy-mm-dd</code> or Genesys sorts them as strings.</td></tr>
+        <tr><td><code>Hours_Remaining</code></td><td>Sort key and filter</td><td>Numeric. Drives "most urgent first".</td></tr>
+        <tr><td><code>Site_Name</code>, <code>CS_Number</code>, <code>System_Type</code>, <code>Site_Address</code>, <code>Authorized_Contact</code></td><td>Flow personalisation</td><td>Available in the outbound flow as <code>call.contact</code> properties.</td></tr>
+        <tr><td><code>Max_Duration_Hours</code></td><td>Extension logic</td><td>The state rule ceiling, so an extension offer cannot exceed it.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Import</h3>
+  <ol>
+    <li><span class="path">Admin &gt; Outbound &gt; Contact Lists &gt; Create New</span>. Name it <code>JCI Test Expiry Notification</code>.</li>
+    <li>Upload the CSV. Set <code>Contact_ID</code> as the ID column.</li>
+    <li>Under Contact List Numbers, include <strong>only</strong> <code>Work_Phone</code>. Remove anything else the importer picks up.</li>
+    <li>Set <code>Time_Zone</code> as the time zone column.</li>
+    <li>In Column Data Type Specifications, mark <code>Hours_Remaining</code> and <code>Max_Duration_Hours</code> numeric, and <code>Test_End_Date</code> as a date.</li>
+    <li>Confirm the record count is 12 and the import shows no errors. An import that partially failed makes the list unassignable to a campaign.</li>
+  </ol>
+
+  <h3>DNC list</h3>
+  <p><span class="path">Admin &gt; Outbound &gt; Do Not Contact Lists &gt; Create New</span>. Name it <code>JCI Demo DNC</code> and upload the DNC CSV.</p>
+  <div class="callout">
+    <span class="label">Built for a specific beat</span>
+    <p>The DNC file contains the reference numbers for <code>JCI-005</code> and <code>JCI-012</code>. If you choose to point your real test number at one of those records instead of leaving them on the placeholder, the campaign will visibly skip it — which is a much better demonstration of DNC than describing it. Decide which you want before import.</p>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section class="block step">
+  <h2><span class="num">Step 3.</span> Architect Outbound Flow</h2>
+  <p class="h2sub">The notification itself. This is where most of the build time goes.</p>
+  <p><span class="path">Architect &gt; Flows &gt; Outbound Call &gt; Add</span> — name it <code>JCI Test Expiry Notification</code>. You will be asked for a contact list (use Step 2's) and a default wrap-up code (use <em>JCI — Message Left</em>).</p>
+  <p>Outbound flows expose <code>call.contact.&lt;column&gt;</code> derived from the default contact list, so your CSV columns are available directly. Note that some Toolbox actions available in inbound flows are not present here.</p>
+
+  <h3>Voice and persona</h3>
+  <p>Match the POC: <strong>male, professional, business-like, reassuring.</strong> Do not use a cheerful assistant voice — this is a life-safety notification and the register carries meaning. Set the TTS voice at flow level so it is consistent across every prompt. <span class="tag t-val">verify</span> which male voices are available in your org and pick the same family the POC build uses, so the two demos sound like one product.</p>
+
+  <h3>Flow structure</h3>
+  <pre>Start
+ └─ Set Participant Data          site=call.contact.Site_Name, cs=call.contact.CS_Number,
+                                  ends=call.contact.Test_End_Local, notify_type="test-expiry"
+ └─ Play Greeting  (TTS)
+ └─ Menu  "Expiry options"        timeout 7s, 2 retries
+     ├─ 1  Extend                 → Confirm → Set Wrap-up "JCI — Test Extended"
+     │                              → Set Flow Outcome: Notification Accepted (Success)
+     ├─ 2  No extension needed    → Confirm → Set Wrap-up "JCI — No Extension Needed"
+     │                              → Set Flow Outcome: Notification Accepted (Success)
+     ├─ 9  Do not contact         → Set Wrap-up "JCI — Do Not Contact Requested"
+     └─ 0  Central station        → Set Wrap-up "JCI — Central Station Requested"
+                                    → Transfer to ACD  [verify availability]
+ └─ Timeout / no input x2         → Short close → Wrap-up "JCI — Message Left"
+ └─ Disconnect</pre>
+
+  <p><span class="tag t-val">verify</span> Two items to confirm in your org before you commit to the flow design: whether <strong>Transfer to ACD</strong> is available in an outbound flow (the opt-out-to-a-person branch depends on it — if not, replace with a callback request or a spoken number), and whether <strong>Flow Outcomes</strong> can be set in an outbound flow. If outcomes are unavailable, the reporting beat in Step 9 relies on wrap-up codes and campaign metrics alone, which is still sufficient.</p>
+
+  <div class="callout warn">
+    <span class="label">Read this before you paste any of the six scripts below</span>
+    <p>The <code>{{Site_Name}}</code>-style tokens in these scripts are a documentation convention, not Architect syntax. They mark where a live value has to be wired in — they are not text to type into a Play Message action. If that literal brace text was typed directly into the flow, Architect either read the characters aloud or the field is sitting there as dead static text with nothing driving it, which is the exact symptom this build is now fixing.</p>
+    <p>Use the wording below to write the literal parts of each script. The actual wiring — replacing each token with a live reference to the contact record — happens in Step 4, once this flow is otherwise built and published.</p>
+  </div>
+
+  <h3>Prompt text — copy directly</h3>
+  <h4>Greeting</h4>
+  <div class="say"><b>TTS</b><p>"This is an automated notification from Johnson Controls monitoring. This call concerns the system test currently active at {{Site_Name}}, {{Site_Address}}. That test is scheduled to end at {{Test_End_Local}}. If work is still in progress, the system will return to normal alarm handling when the test ends."</p></div>
+
+  <h4>Menu</h4>
+  <div class="say"><b>TTS</b><p>"To extend the test window, press 1. If the test can end as scheduled, press 2. To speak with the central station, press 0. To stop receiving these notifications at this number, press 9."</p></div>
+
+  <h4>Extension confirmed</h4>
+  <div class="say"><b>TTS</b><p>"The test window for {{Site_Name}} has been extended. The maximum test duration for this location is {{Max_Duration_Hours}} hours, and your extension is within that limit. You will not receive another notification for this test. Thank you."</p></div>
+
+  <h4>No extension needed</h4>
+  <div class="say"><b>TTS</b><p>"Understood. The test at {{Site_Name}} will end as scheduled at {{Test_End_Local}}, and normal alarm handling will resume at that time. Thank you."</p></div>
+
+  <h4>Timeout close — no input after two retries</h4>
+  <div class="say"><b>TTS</b><p>"This is an automated notification from Johnson Controls monitoring regarding the system test at {{Site_Name}}. No response was received. The test is scheduled to end at {{Test_End_Local}}. If you need to extend it, please contact the central station. Thank you."</p></div>
+  <p>This is now a live-call scenario only — a person answered, the menu played, and nobody pressed anything twice in a row. It is not the message a machine hears. Once Step 5 is built, Answering Machine results never reach this flow at all; they are routed by the response set straight to a dedicated flow with its own one-way message.</p>
+
+  <h4>Do-not-contact confirmation</h4>
+  <div class="say"><b>TTS</b><p>"This number has been removed from automated notifications. Thank you."</p></div>
+
+  <div class="callout">
+    <span class="label">Two deliberate choices worth defending in the room</span>
+    <p><strong>The notification never states a PIC, and never asks for one.</strong> It confirms a site and offers an action. Consistent with the inbound design, an authorisation decision does not happen over an unauthenticated outbound call.</p>
+    <p><strong>Press 9 exists.</strong> A self-service opt-out that permanently marks the contact uncallable is the strongest single answer to a compliance question, and it costs one menu branch.</p>
+  </div>
+
+  <p>Publish the flow. It must be published before the response set can reference it — but publishing only makes the literal wording live. The braced tokens are still just text at this point. Step 4 replaces them with real per-contact values.</p>
+</section>
+
+<!-- STEP 4 -->
+<section class="block step">
+  <h2><span class="num">Step 4.</span> Wire the Contact Variables into the Prompts</h2>
+  <p class="h2sub">The six scripts in Step 3 are the words. This step makes four of them true for each contact record.</p>
+
+  <p>A Play Message action in Architect does not hold a single text field with placeholders inside it. It holds an <strong>Audio Sequence</strong> — an ordered list of small cards that play back to back. Some cards are literal spoken text. Some cards are data. Wiring a variable into a prompt means editing that sequence, not editing text inside a box.</p>
+
+  <h3>How the Edit Audio Sequence dialog works</h3>
+  <ol>
+    <li>Open the flow, and open the Play Message (or equivalent Communication) action carrying the prompt you want to wire.</li>
+    <li>Click into its Text-to-Speech content. This opens the <strong>Edit Audio Sequence</strong> dialog.</li>
+    <li>The dialog holds an ordered list of sequence cards. <strong>Add TTS</strong> adds a literal spoken-text card — type the wording exactly as it should be read. <strong>Add Data</strong> adds a variable card, with a <strong>Select Options</strong> control that decides how the value is rendered — <em>Text to speech</em> for a plain string, or a date- or number-specific rendering if the underlying variable is a typed Date or Decimal rather than a String.</li>
+    <li>Build each message by alternating cards: a TTS card for every literal chunk of wording, a Data card wherever a <code>{{...}}</code> token sat in the script in Step 3.</li>
+  </ol>
+
+  <h3>The variable path</h3>
+  <p>Every column in the contact list attached to this flow is exposed as <code>call.contact.&lt;ColumnName&gt;</code> — confirmed directly against Genesys's own documentation for outbound flows, not carried over from memory. It's case-sensitive; use the exact header spelled out in Step 2's column table: <code>Site_Name</code>, <code>Site_Address</code>, <code>Test_End_Local</code>, <code>Max_Duration_Hours</code>.</p>
+  <p><span class="tag t-val">verify</span> In the Data card, browse the variable picker to the contact object rather than typing the reference blind — confirm the exact capitalization Architect shows you for your org's build. It should resolve to something like <code>Call.Contact.Site_Name</code>.</p>
+
+  <h3>Worked example — the Greeting</h3>
+  <p>The Step 3 script reads: <em>"This call concerns the system test currently active at {{Site_Name}}, {{Site_Address}}. That test is scheduled to end at {{Test_End_Local}}."</em> As a sequence of cards:</p>
+  <pre>1. TTS   "This is an automated notification from Johnson Controls
+          monitoring. This call concerns the system test currently
+          active at "
+2. Data   call.contact.Site_Name           → Select Options: Text to speech
+3. TTS   ", "
+4. Data   call.contact.Site_Address        → Select Options: Text to speech
+5. TTS   ". That test is scheduled to end at "
+6. Data   call.contact.Test_End_Local      → Select Options: Text to speech
+7. TTS   ". If work is still in progress, the system will return to
+          normal alarm handling when the test ends."</pre>
+
+  <h3>The other three prompts, same method</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:30%">Prompt</th><th style="width:30%">Data cards to insert</th><th>Everything else in that script stays a TTS card</th></tr></thead>
+      <tbody>
+        <tr><td>Extension confirmed</td><td><code>Site_Name</code>, <code>Max_Duration_Hours</code></td><td>Two insertion points, in that order.</td></tr>
+        <tr><td>No extension needed</td><td><code>Site_Name</code>, <code>Test_End_Local</code></td><td>Two insertion points, in that order.</td></tr>
+        <tr><td>Timeout close</td><td><code>Site_Name</code>, <code>Test_End_Local</code></td><td>Two insertion points, in that order.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Menu and the Do-not-contact confirmation have no <code>{{...}}</code> tokens in Step 3's scripts — leave them as pure TTS cards. Nothing to wire.</p>
+
+  <div class="callout warn">
+    <span class="label">Check what Test_End_Local actually contains before you wire it</span>
+    <p>If the column holds a friendly, already-localised string per site — for example <code>2:00 PM</code> — a plain Text to speech card reads it naturally and you're done. If it holds a raw ISO timestamp instead — for example <code>2026-09-11T14:00</code> — a plain Text to speech card will read the characters, not a time, and it will sound broken on the call. Open the contact list and check a real record before you wire this one. If it's the raw form, either reformat the source CSV to a spoken-friendly string, or use a Date/Time-aware Select Options entry on the Data card so it renders as a time instead of literal digits.</p>
+  </div>
+  <p><span class="tag t-val">verify</span> <code>Max_Duration_Hours</code> is a plain number of hours (e.g. <code>8</code>) — Text to speech should read it correctly, but confirm the rendered audio in the debug session below rather than assuming it does.</p>
+
+  <h3>Verify before moving on</h3>
+  <ul>
+    <li>Use Architect's Test/Debug tool to run a text-based session against a real contact record.</li>
+    <li>For each of the four wired prompts, confirm the resolved output shows the actual per-contact value — not blank audio, not a validation error, and not the literal <code>{{...}}</code> characters.</li>
+    <li><strong>Republish.</strong> A save alone does not change what a running or future campaign dial actually plays — only a new published version does.</li>
+  </ul>
+</section>
+
+<!-- STEP 5 -->
+<section class="block step">
+  <h2><span class="num">Step 5.</span> Second Outbound Flow — Answering Machine Message</h2>
+  <p class="h2sub">One flow, one job: leave a clean one-way message and disconnect. No menu — a machine cannot press a key.</p>
+
+  <p>Today, Answering Machine results transfer into the same flow as Live Voice, which means a machine sits through the full interactive menu it can never respond to, and only reaches a message after two silent retries time out. A second, purpose-built flow is the correct pattern here, not a workaround — confirmed directly against Genesys's own documentation: <strong>Live Voice and Answering Machine each pick their own action independently in the response set, including their own Transfer to Outbound Flow target.</strong> There is no reason to make a machine wait through a menu it cannot use.</p>
+
+  <h3>Build it</h3>
+  <ol>
+    <li><span class="path">Architect &gt; Flows &gt; Outbound Call &gt; Add</span> — name it <code>JCI Test Expiry Notification — Machine Message</code>.</li>
+    <li>Contact list: the same <code>JCI Test Expiry Notification</code> list from Step 2. A flow needs <em>a</em> contact list to be created at all — it does not need to be a different one from the live flow's.</li>
+    <li>Default wrap-up code: <code>JCI — Message Left</code>, same as the live flow. Either disposition path lands here; it's non-mapped so attempt controls can still recall if you want that.</li>
+    <li>Voice and persona: the same TTS voice family as the live flow, set at flow level, so the two flows sound like one product rather than two different builds.</li>
+  </ol>
+
+  <h3>Flow structure</h3>
+  <pre>Start
+ └─ Set Participant Data          site=call.contact.Site_Name, cs=call.contact.CS_Number,
+                                  ends=call.contact.Test_End_Local, notify_type="test-expiry-machine"
+ └─ Play Message  (TTS)           one-way voicemail message — no menu, no input collection
+ └─ Set Wrap-up "JCI — Message Left"
+ └─ Disconnect</pre>
+
+  <div class="callout">
+    <span class="label">Why Set Participant Data still matters with no agent on the call</span>
+    <p>It keeps this flow's interaction record structured the same way the live flow's is, so the Campaign Interaction Detail view in Step 9 shows a consistent shape whether a given attempt landed on a live answer or a machine — which is exactly the comparison worth showing live.</p>
+  </div>
+
+  <h3>Prompt text — copy directly, then wire like Step 4</h3>
+  <div class="say"><b>TTS</b><p>"You have reached an automated notification from Johnson Controls monitoring. This message concerns the system test currently active at {{Site_Name}}. That test is scheduled to end at {{Test_End_Local}}. If the test needs to be extended, please contact the central station directly. No action is required if the test can end as scheduled. This message will now end."</p></div>
+  <p>Deliberately different register from the live flow's timeout close: this is one-way, so it front-loads the callback instruction rather than offering an action the listener cannot take. Wire <code>Site_Name</code> and <code>Test_End_Local</code> into this one Play Message action using the exact Add TTS / Add Data method from Step 4 — same variable path, same Select Options choice, same debug-session check before you move on.</p>
+
+  <p><span class="tag t-val">verify</span> Call Analysis Responses also expose a separate <strong>Answering Machine Timeout</strong> setting — the action taken if beep/greeting-end detection itself times out before AMD can classify the call. It offers the same three choices (Hang up, Transfer to queue, Transfer to Outbound Flow). Point it at this same flow if your org's response-set editor surfaces it, so a borderline detection doesn't fall back to the live-voice flow by default.</p>
+
+  <p>Publish the flow. It must be published before Step 6's response set can list it as a transfer target.</p>
+</section>
+
+<!-- STEP 6 -->
+<section class="block step">
+  <h2><span class="num">Step 6.</span> Call Analysis Response Set</h2>
+  <p class="h2sub">The piece that makes an agentless campaign legal to save.</p>
+  <p><span class="path">Admin &gt; Outbound &gt; Call Analysis Responses &gt; Create New</span> — name it <code>JCI Agentless Notification CARS</code>. Both outbound flows — the live-voice flow from Step 3 and the machine-message flow from Step 5 — must already be published, or they will not appear in the Transfer to Outbound Flow picker for their respective rows below.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:30%">Analysis result</th><th style="width:30%">Action</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Live Voice</td><td>Transfer to Flow → <code>JCI Test Expiry Notification</code></td><td><span class="tag t-req">Required</span> An agentless campaign will not save without at least one Transfer to Flow action.</td></tr>
+        <tr><td>Answering Machine</td><td>Transfer to Flow → <code>JCI Test Expiry Notification — Machine Message</code></td><td>Now a dedicated flow (Step 5), not the live-voice flow. A machine hears only the one-way message and disconnects — it never reaches a menu it could not use.</td></tr>
+        <tr><td>Fax</td><td>Hang Up</td><td></td></tr>
+        <tr><td>SIT / Disconnected</td><td>Hang Up</td><td>Feeds the uncallable dispositions.</td></tr>
+        <tr><td>Busy · No Answer</td><td>No action</td><td>Attempt controls handle the recall.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><span class="tag t-val">verify</span> If your response-set editor surfaces a separate <strong>Answering Machine Timeout</strong> row (the action taken when beep/greeting-end detection itself times out before AMD can classify the call), point it at the same machine-message flow rather than leaving it on a default that could fall back to the live-voice flow.</p>
+  <div class="callout warn">
+    <span class="label">Do not carry the pacing warning across from the wrong context</span>
+    <p>Genesys documentation warns against transferring live voices to Architect flows because the flow answers everything immediately and destroys the pacing algorithm. <strong>That warning applies to agent-paced modes</strong> — progressive, power, predictive. Agentless has no agent pacing to disrupt, and Transfer to Flow is the intended mechanism. Worth knowing precisely, because if someone in the room has read that article you want to be able to explain the distinction rather than look caught out.</p>
+  </div>
+</section>
+
+<!-- STEP 7 -->
+<section class="block step">
+  <h2><span class="num">Step 7.</span> Compliance Objects</h2>
+  <p class="h2sub">Build these even though the campaign will run without them. They are the first thing you show.</p>
+
+  <h3>Contactable time set</h3>
+  <p><span class="path">Admin &gt; Outbound &gt; Contactable Time Sets &gt; Create New</span> — <code>JCI Notification Window</code>.</p>
+  <ul>
+    <li>Add an entry per time zone present in the list: <code>America/New_York</code>, <code>America/Chicago</code>, <code>America/Denver</code>, <code>America/Los_Angeles</code>.</li>
+    <li>Set each to a defensible window — 08:00 to 20:00 local, Monday to Saturday.</li>
+    <li>The campaign will refuse to save with a contactable time set assigned unless the contact list has a timezone column. Yours does.</li>
+  </ul>
+  <div class="callout warn">
+    <span class="label">Demo-day trap</span>
+    <p>If your session runs at 07:30 Mountain and the window opens at 08:00, the campaign will correctly dial nothing and you will look broken. Either widen the window for the demo, or — better — leave it as configured and use it as the point: <em>"it's not dialling, and that's the control working."</em> Then widen it live to prove the campaign responds. Decide which before you present, and rehearse it.</p>
+  </div>
+
+  <h3>Attempt controls</h3>
+  <p><span class="path">Admin &gt; Outbound &gt; Attempt Controls</span>. Cap attempts per contact and per number, and set a recall interval for busy, no answer, and machine outcomes. Modest values — two attempts, thirty minutes apart — keep the demo tidy.</p>
+
+  <h3>Rule set <span class="tag t-opt">optional</span></h3>
+  <p><span class="path">Admin &gt; Outbound &gt; Rule Management</span> — <code>JCI Notification Rules</code>. One useful pre-call rule: skip records where <code>Hours_Remaining</code> is greater than 24, so only imminent expiries are dialled. This is a better demonstration than a contact list filter because it shows automation deciding, and it visibly excludes <code>JCI-012</code> at 26 hours.</p>
+</section>
+
+<!-- STEP 8 -->
+<section class="block step">
+  <h2><span class="num">Step 8.</span> The Campaign</h2>
+  <p class="h2sub">Everything above exists first, so this step is fast.</p>
+  <p><span class="path">Menu &gt; Digital and Telephony &gt; Outbound &gt; Campaign Management &gt; Voice Campaigns &gt; Create New</span></p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:32%">Setting</th><th style="width:30%">Value</th><th>Why this value</th></tr></thead>
+      <tbody>
+        <tr><td>Campaign Name</td><td><code>JCI Test Expiry Notification</code></td><td>Must be unique in the org.</td></tr>
+        <tr><td>Division</td><td>Home</td><td>Unless your demo org is divided.</td></tr>
+        <tr><td>Dialing Mode</td><td><strong>Agentless Dialing</strong></td><td></td></tr>
+        <tr><td>Outbound Lines Distribution</td><td><strong>2</strong></td><td>Simultaneous calls. Two keeps the demo observable and does not starve other campaigns — agentless reserves lines explicitly.</td></tr>
+        <tr><td>Dialing Group</td><td>Site or Edge Group</td><td>Whichever your demo org uses.</td></tr>
+        <tr><td>Call Response</td><td><code>JCI Agentless Notification CARS</code></td><td>Validation fails without a Transfer to Flow action.</td></tr>
+        <tr><td>No-answer timeout</td><td><strong>20 seconds</strong></td><td>Range is 15–60, default 30. Twenty keeps the demo moving.</td></tr>
+        <tr><td>Contact List</td><td><code>JCI Test Expiry Notification</code></td><td></td></tr>
+        <tr><td>Contact List Numbers</td><td><code>Work_Phone</code> only</td><td>Left-to-right order is dial order. Remove <code>Reference_Phone</code> if it appears.</td></tr>
+        <tr><td>Caller ID: Name</td><td><code>Johnson Controls Monitoring</code></td><td>Small detail, disproportionate effect on realism.</td></tr>
+        <tr><td>Caller ID: Phone Number</td><td>A DID in your org</td><td>Digits only, no dashes or parentheses, or E.164.</td></tr>
+        <tr><td>DNC Lists</td><td><code>JCI Demo DNC</code></td><td></td></tr>
+        <tr><td>Call Rule Sets</td><td><code>JCI Notification Rules</code></td><td>If built. Evaluation is left-to-right.</td></tr>
+        <tr><td>Contactable Time Set</td><td><code>JCI Notification Window</code></td><td>See the demo-day trap in Step 7.</td></tr>
+        <tr><td>Always Running</td><td>Off</td><td>You want it to complete and report.</td></tr>
+        <tr><td>Contact Sorting</td><td><code>Hours_Remaining</code> ascending, Field is Numeric on</td><td>Most urgent expiry dials first. Optionally add <code>Test_End_Date</code> as a second key.</td></tr>
+        <tr><td>Dynamic Queueing</td><td>Off</td><td>Cannot be enabled after creation, but you do not need it and it carries org-level limits.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- STEP 9 -->
+<section class="block step">
+  <h2><span class="num">Step 9.</span> Pre-build the Reporting</h2>
+  <p class="h2sub">The closing beat fails if you are configuring a view live with an empty result set.</p>
+  <ul>
+    <li><strong>Run the campaign at least twice before the session</strong> so historical views have data. An empty Campaign Performance view is a worse ending than no ending.</li>
+    <li>Save a filtered <strong>Campaign Performance Summary</strong> view — dials, contacts, connect rate, abandon measures, campaign progress.</li>
+    <li>Save a <strong>Campaign Interaction Detail</strong> view so you can drill into a single attempt and show the wrap-up code that resulted.</li>
+    <li>If Flow Outcomes are available in outbound flows, save a <strong>Flow Outcome Performance</strong> view for <em>Notification Accepted</em>. <span class="tag t-val">verify</span></li>
+    <li>Dial at least one test record against a real voicemail box you control, not just a live answer, so Campaign Interaction Detail shows an attempt that resolved through the machine-message flow, distinct in shape from one that resolved through the live flow.</li>
+    <li>Have the inbound Test-On reporting open in an adjacent tab. The closing line depends on both being visible in the same analytics framework — that comparison is the whole point of the beat.</li>
+  </ul>
+</section>
+
+<!-- DRY RUN -->
+<section class="block">
+  <h2><span class="num">Step 10.</span> Dry Run Checklist</h2>
+  <p class="h2sub">Work through this at least a day before 9/11, not on the morning.</p>
+  <ul class="check">
+    <li>Placeholder dial numbers replaced with numbers you control, and the import shows 12 records with no errors</li>
+    <li><code>Reference_Phone</code> is <em>not</em> configured as a phone number type</li>
+    <li><code>Test_End_Local</code> and <code>Test_End_Date</code> refreshed to dates around the session — they are currently set to 9 and 10 September 2026</li>
+    <li>In a Test/Debug session, every wired prompt (greeting, extension confirmed, no extension needed, timeout close, machine message) resolves to real per-contact values — no blank audio, no validation error, no literal <code>{{...}}</code> text</li>
+    <li>Both outbound flows show <strong>Published</strong>, not just Saved, and the response set's dropdowns reflect the latest published version of each</li>
+    <li>Live answer reaches the live flow and the greeting says the right site name and end time</li>
+    <li>Press 1 completes, sets the extension wrap-up, and the record shows as terminated</li>
+    <li>Press 2 completes and dispositions differently from press 1</li>
+    <li>Press 9 marks the contact uncallable — verify in the contact list editor, not just the flow</li>
+    <li>Press 0 behaves as designed, or the substitute branch works if Transfer to ACD is unavailable</li>
+    <li>A no-input timeout on a live call reaches the timeout close and dispositions as Message Left</li>
+    <li>A call answered by a real answering machine routes to the second flow, not the live flow, plays the one-way message in full, and dispositions as Message Left</li>
+    <li>A DNC-matched record is visibly skipped in the campaign results</li>
+    <li>Contact sorting puts the 2-hour record first</li>
+    <li>The rule set excludes the 26-hour record, if you built it</li>
+    <li>Caller ID displays the name and number you set</li>
+    <li>Campaign Performance and Interaction Detail views populate and are saved</li>
+    <li>Contactable time window is either widened for the session or rehearsed as the deliberate beat</li>
+    <li>TTS voice is male and matches the POC persona family, on both flows</li>
+  </ul>
+</section>
+
+<!-- TALK TRACK MAPPING -->
+<section class="block">
+  <h2><span class="num">Step 11.</span> Talk Track, Mapped to What You Built</h2>
+  <p class="h2sub">Scene A from the demo strategy, with each beat tied to the object that carries it.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th style="width:26%">Beat</th><th style="width:30%">What you show</th><th>The line that lands it</th></tr></thead>
+      <tbody>
+        <tr><td>1. Open on the problem</td><td>Nothing. Screen stays off.</td><td>"A test window expires at a site and nobody extends it. The technician is still working. What actually happens next in your world?" — then let them answer.</td></tr>
+        <tr><td>2. Controls before dialing</td><td>Contactable time set, DNC list, attempt controls, wrap-up mappings</td><td>"I'm starting with the boring part on purpose, because in your business it's the part that matters. These are controls, not compliance — your compliance function decides which have to be on."</td></tr>
+        <tr><td>3. The recommended use case</td><td>Agentless campaign running; live answer into the flow; press 1</td><td>"That call cost you no agent time. And if the contact says yes, the inbound call you'd otherwise have handled never happens."</td></tr>
+        <tr><td>4. The opt-out</td><td>Press 9, then the contact showing uncallable</td><td>"One keypress on one call, and that contact is permanently out of the campaign. Nobody edited a list."</td></tr>
+        <tr><td>5. Answer the dialer question</td><td>Preview and predictive configuration; manual dial on behalf of a queue</td><td>"You asked us for a view on dialer scope, so let me be complete rather than clever. My recommendation is you start with the agentless notification — the other two are there when you want them."</td></tr>
+        <tr><td>6. Land on reporting</td><td>Campaign Performance beside inbound Test-On reporting</td><td>"Same reporting, same platform, same contacts. So you can actually answer 'did the notification reduce the calls' — instead of comparing two vendors' exports and hoping."</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Discovery to extract before you leave</h3>
+  <ul>
+    <li>How many test windows expire without extension in a month, and what does the resulting activity cost?</li>
+    <li>Who owns outbound today, and on what platform?</li>
+    <li>If you wanted this campaign in production, whose budget is that?</li>
+  </ul>
+
+  <div class="callout">
+    <span class="label">If JCI has not answered the dialer scope question by 9/11</span>
+    <p>Run the scene exactly as built and present the three patterns as the recommendation you were asked for on 24 August. The build stands on its own — you are not waiting on their answer to have something worth showing, and delivering the recommendation unprompted is stronger than asking again.</p>
+  </div>
+</section>
+
+<footer class="doc">
+  <h3>Notes</h3>
+  <ul>
+    <li>Configuration steps, permissions, field ranges, and the agentless Transfer to Flow requirement were verified against current Genesys Cloud documentation rather than recalled. Steps 4 and 5 — the Audio Sequence / Add TTS / Add Data mechanism, the <code>call.contact.&lt;Column&gt;</code> variable path, and the ability of Live Voice and Answering Machine to route to independent outbound flows — were checked the same way. Items still marked <span class="tag t-val">verify</span> depend on your org's entitlements, TTS/data-type configuration, or UI surface and could not be confirmed remotely.</li>
+    <li>Contact list records are drawn from the JCI-supplied account mock data workbook. Authorised contact names are synthetic — the workbook does not contain contact names. Site names, addresses, central station numbers, system types, time zones, and state duration maximums are theirs.</li>
+    <li>Build in an SC-owned demo org. A POC build issue must not taint this demo, and a demo artifact must not appear in a scored environment.</li>
+    <li>Internal use only.</li>
+  </ul>
+</footer>
+
+</div>
+</body>
+</html>
