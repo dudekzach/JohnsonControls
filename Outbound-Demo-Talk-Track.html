@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JCI Outbound Dialer — Live Demo Teleprompter</title>
+<style>
+  :root[data-theme="light"]{
+    --bg:#f4f6f8; --sidebar:#171b21; --sidebar-ink:#dbe2ea; --sidebar-line:#2b323c;
+    --card:#ffffff; --ink:#171b21; --ink-soft:#4a5560; --ink-faint:#7c8794;
+    --line:#dbe1e8; --line-soft:#ebeff3;
+    --accent:#0b4f9e; --accent-soft:#eaf1fa; --accent-ink:#0b4f9e;
+    --do-bg:#fdf3e0; --do-line:#d99a2b; --do-ink:#7a4e00;
+    --say-bg:#eaf1fa; --say-line:#6c93c4; --say-ink:#0d3d75;
+    --warn-bg:#fbeeee; --warn-line:#c94f4f; --warn-ink:#8f1d1d;
+    --ok-bg:#eaf5ee; --ok-line:#4f9c6f; --ok-ink:#1f5c3a;
+    --code-bg:#f0f3f6; --code-ink:#2b2f36;
+    --shadow:0 2px 10px rgba(20,25,32,0.06);
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --sidebar:#0c0e12; --sidebar-ink:#c7cdd6; --sidebar-line:#242a32;
+    --card:#1a1f26; --ink:#e7ebf0; --ink-soft:#aab2bd; --ink-faint:#7c8794;
+    --line:#2a313b; --line-soft:#232a33;
+    --accent:#5b9bef; --accent-soft:#1c2735; --accent-ink:#8fbdf7;
+    --do-bg:#2c2312; --do-line:#a97a1f; --do-ink:#e0ad55;
+    --say-bg:#152233; --say-line:#3f6ea3; --say-ink:#8fbdf7;
+    --warn-bg:#2c1616; --warn-line:#9c4646; --warn-ink:#e08a8a;
+    --ok-bg:#132a1e; --ok-line:#3f7d5b; --ok-ink:#7fcb9f;
+    --code-bg:#20262e; --code-ink:#d7dde4;
+    --shadow:0 2px 14px rgba(0,0,0,0.4);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:18px;line-height:1.62;}
+  .app{display:flex;min-height:100vh;}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{width:320px;flex:0 0 320px;background:var(--sidebar);color:var(--sidebar-ink);
+    position:sticky;top:0;height:100vh;overflow-y:auto;padding:20px 16px 24px;}
+  .sidebar-head{padding-bottom:14px;border-bottom:1px solid var(--sidebar-line);margin-bottom:12px;}
+  .brand{font-size:1.02rem;font-weight:700;color:#fff;line-height:1.3;}
+  .brand span{display:block;font-size:0.74rem;font-weight:500;color:#8b96a4;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px;}
+  .timer-block{margin-top:16px;background:#1c212a;border:1px solid var(--sidebar-line);border-radius:8px;padding:12px 14px;}
+  .timer-display{font-size:1.9rem;font-weight:700;font-variant-numeric:tabular-nums;color:#fff;letter-spacing:0.02em;}
+  .timer-sub{font-size:0.74rem;color:#8b96a4;margin-top:1px;}
+  .timer-controls{display:flex;gap:6px;margin-top:10px;}
+  .timer-controls button, .view-controls button{
+    flex:1;background:#262c36;color:#dbe2ea;border:1px solid #333b47;border-radius:5px;
+    padding:6px 4px;font-size:0.76rem;font-weight:600;cursor:pointer;}
+  .timer-controls button:hover, .view-controls button:hover{background:#313846;}
+  .view-controls{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+  .view-controls button{flex:1 1 45%;}
+  .toc{margin-top:14px;list-style:none;padding:0;}
+  .toc-group{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:#68727f;
+    font-weight:700;margin:16px 0 6px 4px;}
+  .toc li{list-style:none;}
+  .toc a{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:8px 10px;border-radius:6px;color:var(--sidebar-ink);text-decoration:none;
+    font-size:0.88rem;line-height:1.35;border-left:3px solid transparent;}
+  .toc a:hover{background:#1e2430;}
+  .toc a.active{background:#1e2b3f;border-left-color:var(--accent);color:#fff;font-weight:600;}
+  .toc-time{font-size:0.68rem;color:#69747f;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .toc a.on-script .toc-time{color:#f0b93a;font-weight:700;}
+  .toc a.on-script::before{content:'▸';color:#f0b93a;margin-right:2px;}
+  .sidebar-foot{margin-top:18px;padding-top:12px;border-top:1px solid var(--sidebar-line);
+    font-size:0.72rem;color:#69747f;line-height:1.5;}
+
+  /* ---------- MAIN ---------- */
+  .content{flex:1;max-width:1120px;padding:32px 44px 140px;}
+  header.doc-head{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--accent);
+    border-radius:8px;padding:26px 30px;margin-bottom:22px;box-shadow:var(--shadow);}
+  header.doc-head h1{margin:0 0 6px;font-size:1.7rem;letter-spacing:-0.01em;}
+  header.doc-head .sub{color:var(--ink-soft);font-size:1.03rem;margin:0 0 16px;}
+  .metagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 22px;
+    border-top:1px solid var(--line-soft);padding-top:14px;font-size:0.92rem;}
+  .metagrid .k{display:block;text-transform:uppercase;font-size:0.68rem;letter-spacing:0.06em;
+    color:var(--ink-faint);font-weight:700;}
+
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:8px;
+    margin-bottom:18px;box-shadow:var(--shadow);scroll-margin-top:18px;}
+  details{padding:0;}
+  details>summary{list-style:none;cursor:pointer;padding:20px 28px;display:flex;
+    align-items:center;justify-content:space-between;gap:14px;}
+  details>summary::-webkit-details-marker{display:none;}
+  .summary-left{display:flex;align-items:baseline;gap:12px;}
+  .beat-num{font-size:0.78rem;font-weight:800;color:#fff;background:var(--accent);
+    border-radius:5px;padding:3px 9px;white-space:nowrap;}
+  .beat-title{font-size:1.24rem;font-weight:700;}
+  .beat-sub{display:block;font-size:0.88rem;color:var(--ink-soft);font-weight:400;margin-top:2px;}
+  .chevron{font-size:0.9rem;color:var(--ink-faint);transition:transform .15s;flex-shrink:0;}
+  details[open] .chevron{transform:rotate(90deg);}
+  .beat-body{padding:0 28px 26px;border-top:1px solid var(--line-soft);padding-top:18px;}
+  h3{font-size:1.04rem;margin:22px 0 8px;}
+  h3:first-of-type{margin-top:2px;}
+  h4.microhead{font-size:0.74rem;margin:16px 0 6px;color:var(--ink-faint);
+    text-transform:uppercase;letter-spacing:0.07em;font-weight:700;}
+  p{margin:0 0 13px;}
+  ul,ol{margin:0 0 13px;padding-left:22px;}
+  li{margin-bottom:6px;}
+  code{background:var(--code-bg);border:1px solid var(--line);border-radius:3px;padding:1px 5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.87em;color:var(--code-ink);}
+  .path{background:var(--code-bg);border-radius:3px;padding:2px 7px;font-size:0.88rem;
+    font-weight:600;color:var(--accent-ink);display:inline-block;}
+
+  /* DO / SAY blocks */
+  .block{border-radius:0 6px 6px 0;padding:13px 17px;margin:0 0 13px;border-left:4px solid;}
+  .block .lbl{display:block;font-size:0.68rem;font-weight:800;text-transform:uppercase;
+    letter-spacing:0.08em;margin-bottom:5px;}
+  .block p:last-child{margin-bottom:0;}
+  .do{background:var(--do-bg);border-left-color:var(--do-line);}
+  .do .lbl{color:var(--do-ink);}
+  .say{background:var(--say-bg);border-left-color:var(--say-line);}
+  .say .lbl{color:var(--say-ink);}
+  .warn{background:var(--warn-bg);border-left-color:var(--warn-line);}
+  .warn .lbl{color:var(--warn-ink);}
+  .ok{background:var(--ok-bg);border-left-color:var(--ok-line);}
+  .ok .lbl{color:var(--ok-ink);}
+
+  /* transcript-style system prompt quotes */
+  .transcript{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;
+    padding:12px 16px;margin:0 0 14px;font-size:0.97rem;}
+  .transcript .who{font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;
+    color:var(--ink-faint);margin-bottom:4px;}
+  .transcript p{margin:0;font-style:italic;color:var(--ink);}
+
+  .tablewrap{overflow-x:auto;margin:0 0 16px;border:1px solid var(--line);border-radius:6px;}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:0.9rem;}
+  th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-soft);}
+  thead th{background:var(--accent-soft);font-size:0.72rem;text-transform:uppercase;
+    letter-spacing:0.05em;color:var(--ink-soft);border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr.flag td{background:var(--warn-bg);}
+  tbody tr.ok-row td{background:var(--ok-bg);}
+
+  pre{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:13px 15px;
+    overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:0.83rem;line-height:1.55;margin:0 0 14px;color:var(--code-ink);}
+
+  .tag{display:inline-block;font-size:0.66rem;font-weight:800;text-transform:uppercase;
+    letter-spacing:0.05em;padding:2px 7px;border-radius:3px;white-space:nowrap;vertical-align:1px;}
+  .t-fix{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);}
+  .t-ok{background:var(--ok-bg);color:var(--ok-ink);border:1px solid var(--ok-line);}
+  .t-val{background:var(--do-bg);color:var(--do-ink);border:1px solid var(--do-line);}
+
+  .qa-item{border-bottom:1px solid var(--line-soft);padding:14px 0;}
+  .qa-item:last-child{border-bottom:none;}
+  .qa-q{font-weight:700;font-size:1rem;margin-bottom:6px;}
+  .qa-q .qmark{color:var(--accent);margin-right:6px;}
+
+  footer.doc{padding:20px 28px;color:var(--ink-faint);font-size:0.86rem;}
+
+  /* floating nav */
+  .floatnav{position:fixed;right:28px;bottom:26px;display:flex;flex-direction:column;gap:8px;z-index:50;}
+  .floatnav button{background:var(--accent);color:#fff;border:none;border-radius:24px;
+    padding:11px 18px;font-size:0.86rem;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,0.22);}
+  .floatnav button:hover{filter:brightness(1.08);}
+  .floatnav button:disabled{opacity:0.35;cursor:default;}
+
+  .callout-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;}
+  .callout-strip .tag{font-size:0.7rem;padding:4px 9px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="brand">JCI — Outbound Dialer<span>Live Demo Teleprompter</span></div>
+      <div class="timer-block">
+        <div class="timer-display" id="timerDisplay">00:00</div>
+        <div class="timer-sub" id="timerSub">budget ≈ 27:00</div>
+        <div class="timer-controls">
+          <button id="btnStart">Start</button>
+          <button id="btnPause">Pause</button>
+          <button id="btnReset">Reset</button>
+        </div>
+      </div>
+      <div class="view-controls">
+        <button id="themeToggle">🌙 Dark</button>
+        <button id="expandAll">Expand all</button>
+        <button id="collapseAll">Collapse all</button>
+      </div>
+    </div>
+
+    <ul class="toc" id="toc">
+      <li class="toc-group">Before You're Live</li>
+      <li><a href="#preflight" data-target="preflight">Pre-Flight Fixes <span class="toc-time">—</span></a></li>
+
+      <li class="toc-group">The Scene</li>
+      <li><a href="#beat1" data-target="beat1" data-start="0">1 · Open on the Problem <span class="toc-time">0:00</span></a></li>
+      <li><a href="#beat2" data-target="beat2" data-start="60">2 · Controls Before Dialing <span class="toc-time">1:00</span></a></li>
+      <li><a href="#beat3" data-target="beat3" data-start="240">3 · The Live Notification Call <span class="toc-time">4:00</span></a></li>
+      <li><a href="#beat4" data-target="beat4" data-start="600">4 · Opt-Out &amp; DNC <span class="toc-time">10:00</span></a></li>
+      <li><a href="#beat5" data-target="beat5" data-start="780">5 · Machine Detection <span class="toc-time">13:00</span></a></li>
+      <li><a href="#beat6" data-target="beat6" data-start="1020">6 · Dialer Mode Recommendation <span class="toc-time">17:00</span></a></li>
+      <li><a href="#beat7" data-target="beat7" data-start="1260">7 · Reporting &amp; The Close <span class="toc-time">21:00</span></a></li>
+      <li><a href="#discovery" data-target="discovery" data-start="1500">Discovery to Extract <span class="toc-time">25:00</span></a></li>
+
+      <li class="toc-group">Reference — Pivot Freely</li>
+      <li><a href="#qa" data-target="qa">Anticipated Questions <span class="toc-time">—</span></a></li>
+      <li><a href="#quickref" data-target="quickref">Quick Reference <span class="toc-time">—</span></a></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      ↑ / ↓ or the floating buttons move between sections. The amber ▸ marker tracks where the clock says you should be — it will not match your actual scroll position, and that's fine; pivot on purpose.
+    </div>
+  </aside>
+
+  <main class="content" id="content">
+
+    <header class="doc-head">
+      <h1>Outbound Dialer — Live Demo</h1>
+      <p class="sub">JCI Central Station Operations · Friday 9/11 session · Outbound segment only (FAQ/Knowledge is a separate scene, not covered here)</p>
+      <div class="metagrid">
+        <div><span class="k">Built as</span>Single Agentless campaign, two Architect outbound flows</div>
+        <div><span class="k">Live vs. spoken</span>Agentless is running live · Preview/Progressive/Power/Predictive are a spoken recommendation</div>
+        <div><span class="k">Register</span>Operational walkthrough with embedded discovery — not a pitch</div>
+        <div><span class="k">Audience</span>Whoever owns outbound today, plus whoever approves prompt/response wording</div>
+        <div><span class="k">Time budget</span>≈ 27 minutes for this scene</div>
+        <div><span class="k">Org</span>SC-owned demo org — never the POC tenant</div>
+      </div>
+    </header>
+
+    <!-- ================= PRE-FLIGHT ================= -->
+    <section class="card" id="preflight">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num" style="background:var(--warn-line)">FIX</span>
+            <span><span class="beat-title">Pre-Flight Fixes</span><span class="beat-sub">Do these before the room fills up — not one of them is visible from the campaign summary screen.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+
+          <div class="warn block">
+            <span class="lbl">Fix required — the DNC list will not skip anything as currently loaded</span>
+            <p>Every <code>Work_Phone</code> in the imported contact list is the same real number — <code>317-771-5324</code> — and the DNC file contains the fictitious 555 <em>reference</em> numbers for JCI-005 and JCI-012, not that dial number. DNC matching happens against the number the campaign actually dials. As loaded, none of the twelve records match the DNC list, so if you run the campaign and point to the DNC beat, nothing will visibly skip.</p>
+            <p><strong>Cleanest fix:</strong> in the contact list editor, temporarily change &nbsp;<code>JCI-005 / Target - Los Angeles 3</code>'s &nbsp;<code>Work_Phone</code>&nbsp; to &nbsp;<code>213-555-1141</code>&nbsp; — the number already on <code>JCI Demo DNC</code>. DNC evaluation happens before the dial attempt, so the record shows as excluded without Genesys ever needing to actually reach that number. Leave the other eleven records on your real test number. Do this the night before, not live.</p>
+          </div>
+
+          <div class="ok block">
+            <span class="lbl">Already true — no action needed</span>
+            <p>Press 9 (self-service opt-out) does <strong>not</strong> depend on the fix above. It works off the wrap-up mapping inside the live call, not the pre-loaded DNC list, so Beat 4's live opt-out keypress is safe to run exactly as built.</p>
+          </div>
+
+          <div class="do block">
+            <span class="lbl">Confirm before you start</span>
+            <ul style="margin-bottom:0;">
+              <li>Both outbound flows show <strong>Published</strong> — the live flow and <code>JCI Test Expiry Notification — Machine Message</code>.</li>
+              <li>In Architect Test/Debug, the four wired prompts (greeting, extension confirmed, no extension needed, timeout close) resolve to real per-contact values — not blank audio, not literal <code>{{...}}</code> text.</li>
+              <li>The campaign has run at least twice already so Campaign Performance and Interaction Detail aren't empty when you land on them in Beat 7.</li>
+              <li><code>JCI Notification Window</code> covers your actual session start time in each time zone in the list. If it doesn't, decide now whether you're widening it beforehand or using the closed window as the deliberate "it's not dialing, and that's the control working" beat — don't discover this live.</li>
+              <li>Whether <strong>Transfer to ACD</strong> is available in your org's outbound flow (press 0 depends on it) — still flagged <span class="tag t-val">verify</span> from the build. Have a fallback line ready if it isn't.</li>
+            </ul>
+          </div>
+
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 1 ================= -->
+    <section class="card beat" id="beat1">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">1</span>
+            <span><span class="beat-title">Open on the Problem</span><span class="beat-sub">Screen stays off. ~1 minute.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Nothing on screen. Don't open the campaign, don't open Architect. Ask the question and let it sit.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"A test window expires at a site, and nobody extends it. The technician's still working the panel. What actually happens next in your world today?"</p>
+          </div>
+          <p>Let them answer. Whatever comes back, it involves either a phone call someone has to remember to make, or a technician working past a window nobody flagged. Bridge with:</p>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"That's the gap this scene closes. What you're about to see never touches an agent unless the caller asks for one."</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 2 ================= -->
+    <section class="card beat" id="beat2">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">2</span>
+            <span><span class="beat-title">Controls Before Dialing</span><span class="beat-sub">Contactable time set, DNC list, attempt controls, wrap-up mappings. ~3 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Navigate <span class="path">Admin &gt; Outbound</span>. Show, in order: Contactable Time Sets (<code>JCI Notification Window</code>) → Do Not Contact Lists (<code>JCI Demo DNC</code>) → Attempt Controls → Wrap-up Codes list.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say — opening the section</span>
+            <p>"I'm starting with the boring part on purpose, because in your business it's the part that matters. These are controls, not compliance — your compliance and legal function decides which of these have to be on and how they're set. Genesys doesn't guarantee compliance; it gives you the levers your policy runs on."</p>
+          </div>
+          <h4 class="microhead">On wrap-up mapping specifically</h4>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"This next part surprises people. Wrap-up isn't just a report label here — it changes what the campaign is allowed to do next. Watch: if an agent, or in this case the flow, sets a code mapped to <em>Contact Uncallable</em>, that contact's phone numbers come out of rotation immediately. One disposition, no one editing a list."</p>
+          </div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th style="width:34%">Wrap-up code</th><th style="width:24%">Mapping</th><th>What it does to future dialing</th></tr></thead>
+              <tbody>
+                <tr><td><code>JCI — Test Extended</code></td><td>Right Party Contact</td><td>Terminating — reached, action taken, no further attempts this campaign.</td></tr>
+                <tr><td><code>JCI — No Extension Needed</code></td><td>Right Party Contact</td><td>Terminating — reached and declined; a success outcome, not a failure.</td></tr>
+                <tr><td><code>JCI — Message Left</code></td><td>Unmapped</td><td>Non-terminating so attempt controls can retry. Set by the machine branch and the no-input timeout.</td></tr>
+                <tr><td><code>JCI — Central Station Requested</code></td><td>Right Party Contact</td><td>Terminating — caller asked for a person.</td></tr>
+                <tr class="flag"><td><code>JCI — Do Not Contact Requested</code></td><td>Contact Uncallable</td><td><strong>The compliance beat.</strong> Removes every number for that contact from all future dialing.</td></tr>
+                <tr><td><code>JCI — Wrong Number</code></td><td>Number Uncallable</td><td>Kills that one number, not the contact.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="warn block">
+            <span class="lbl">Phrasing trap</span>
+            <p>Don't say "wrap-up is just reporting." Say: "in outbound, wrap-up mapping can change whether the number or the contact remains callable." It's the difference between a report field and an access-control decision.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 3 ================= -->
+    <section class="card beat" id="beat3">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">3</span>
+            <span><span class="beat-title">The Live Notification Call</span><span class="beat-sub">Agentless campaign running, live answer, press 1. ~6 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Open <span class="path">Campaign Management &gt; JCI Test Expiry Notification</span> and turn it on (or show it already running). Sorted by <code>Hours_Remaining</code> ascending, so <strong>JCI-001 / Target - Chicago 1</strong> — 2 hours remaining, a BA system — dials first. Answer on your test line.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say — before it rings</span>
+            <p>"This is agentless — there's no agent on this call, no queue, no script. Genesys places the call, plays a message, and takes an action based on what happens. That call costs you no agent time, and if the contact says yes to what it's about to offer, the inbound call you'd otherwise get from a confused technician never happens."</p>
+          </div>
+
+          <h4 class="microhead">System says (TTS) — greeting</h4>
+          <div class="transcript">
+            <div class="who">Genesys Cloud → your phone</div>
+            <p>"This is an automated notification from Johnson Controls monitoring. This call concerns the system test currently active at Target - Chicago 1, 410 Wabash Avenue. That test is scheduled to end at 10:00 AM. If work is still in progress, the system will return to normal alarm handling when the test ends."</p>
+          </div>
+
+          <h4 class="microhead">System says (TTS) — menu</h4>
+          <div class="transcript">
+            <div class="who">Genesys Cloud → your phone</div>
+            <p>"To extend the test window, press 1. If the test can end as scheduled, press 2. To speak with the central station, press 0. To stop receiving these notifications at this number, press 9."</p>
+          </div>
+
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Press <strong>1</strong>.</p>
+          </div>
+
+          <h4 class="microhead">System says (TTS) — extension confirmed</h4>
+          <div class="transcript">
+            <div class="who">Genesys Cloud → your phone</div>
+            <p>"The test window for Target - Chicago 1 has been extended. The maximum test duration for this location is 4 hours, and your extension is within that limit. You will not receive another notification for this test. Thank you."</p>
+          </div>
+
+          <div class="say block">
+            <span class="lbl">Say — right after it hangs up</span>
+            <p>"Notice what it just did — it read back your own state ceiling, four hours for this location, and confirmed the extension fits inside it. That's not a static recording; every field in that sentence came off the contact record for this specific site."</p>
+          </div>
+
+          <h4 class="microhead">Optional second dial — "no extension needed" path</h4>
+          <p>If there's time and appetite for a second live call, dial a different record — <strong>JCI-006 / Target - Miami 1</strong> (7 hours remaining, 8-hour max) — and press <strong>2</strong> instead of 1, to show the other terminating branch.</p>
+          <div class="transcript">
+            <div class="who">Genesys Cloud → your phone</div>
+            <p>"Understood. The test at Target - Miami 1 will end as scheduled at 3:00 PM, and normal alarm handling will resume at that time. Thank you."</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"Different wrap-up, same terminating outcome. Reached and declined is still a success — it's not a failure just because nobody extended anything."</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 4 ================= -->
+    <section class="card beat" id="beat4">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">4</span>
+            <span><span class="beat-title">Opt-Out &amp; DNC</span><span class="beat-sub">Press 9 live, then the pre-existing DNC suppression. ~3 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <h4 class="microhead">Part A — the live self-service opt-out</h4>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Dial in on another record and press <strong>9</strong> at the menu instead of 1 or 2.</p>
+          </div>
+          <div class="transcript">
+            <div class="who">Genesys Cloud → your phone</div>
+            <p>"This number has been removed from automated notifications. Thank you."</p>
+          </div>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Immediately open that contact's record in the contact list editor and point at its callable state — it now reads uncallable.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"One keypress on one call, and that contact is permanently out of this campaign — not just this run, every future run. Nobody went and edited a list."</p>
+          </div>
+
+          <h4 class="microhead">Part B — suppression before the call ever happens</h4>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Open <span class="path">Admin &gt; Outbound &gt; Do Not Contact Lists &gt; JCI Demo DNC</span>, then flip to the campaign's contact list view and show <strong>JCI-005 / Target - Los Angeles 3</strong> sitting excluded — never attempted, this run or any run — assuming the pre-flight fix above was made.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"That one never got dialed at all. It's on your Do Not Contact list, and Genesys checks that before it ever places the call — not as a courtesy, as a precondition. Press 9 handles opt-out in the moment; a DNC list handles it before the campaign even tries."</p>
+          </div>
+          <div class="do block" style="margin-top:2px;">
+            <span class="lbl">If someone asks about JCI-012</span>
+            <p><strong>JCI-012 / Walmart - Houston 2</strong> is excluded twice over — it's also on <code>JCI Demo DNC</code>, and separately its 26 hours remaining exceeds the rule set's 24-hour threshold (Beat 6 territory). Worth naming as belt-and-suspenders if it comes up, not worth engineering a beat around.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 5 ================= -->
+    <section class="card beat" id="beat5">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">5</span>
+            <span><span class="beat-title">Machine Detection — the Second Flow</span><span class="beat-sub">Live Voice and Answering Machine route to independent flows. ~4 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <div class="say block">
+            <span class="lbl">Say — setting it up</span>
+            <p>"Now let's see what happens when nobody answers as a person. Same campaign, same contact list — a completely different result, and a completely different flow handling it."</p>
+          </div>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Dial from a number that will roll to a real voicemail box you control. Let it record the full message rather than hanging up early.</p>
+          </div>
+          <h4 class="microhead">System says (TTS) — machine message, one-way, no menu</h4>
+          <div class="transcript">
+            <div class="who">Genesys Cloud → voicemail</div>
+            <p>"You have reached an automated notification from Johnson Controls monitoring. This message concerns the system test currently active at [Site Name]. That test is scheduled to end at [Test End]. If the test needs to be extended, please contact the central station directly. No action is required if the test can end as scheduled. This message will now end."</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"A machine can't press a key, so we don't make it sit through a menu it can't use. That's not a workaround — it's a designed behavior. This call analysis result and the live-voice result each pick their own destination independently, right down to which flow they transfer into."</p>
+          </div>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Show the Call Analysis Response Set: Live Voice → <code>JCI Test Expiry Notification</code>; Answering Machine → <code>JCI Test Expiry Notification — Machine Message</code>. Point at the fact that these are two different Transfer-to-Flow targets in the same response set.</p>
+          </div>
+          <div class="ok block">
+            <span class="lbl">If asked why this needed a second flow instead of a branch inside the first</span>
+            <p>Because the analysis decision happens before the flow starts — the response set, not the flow, decides which flow to enter. Genesys documents Live Voice and Answering Machine as independently configurable Transfer-to-Flow targets; building two purpose-built flows is the supported pattern, not a workaround for a missing branch.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 6 ================= -->
+    <section class="card beat" id="beat6">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">6</span>
+            <span><span class="beat-title">Dialer Mode Recommendation</span><span class="beat-sub">Spoken, not shown live — this is where you deliver the dialer-scope recommendation JCI asked for. ~4 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <div class="say block">
+            <span class="lbl">Say — the sentence worth having verbatim</span>
+            <p>"Preview controls risk with agent judgment. Progressive controls it with one-for-one automation. Power increases dialing intensity once an agent is available. Predictive anticipates agent availability. Agentless — what you just watched — removes the agent from the initial attempt entirely."</p>
+          </div>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Nothing new needs to be live here. If you want a visual anchor, hover the campaign creation dialog's Dialing Mode dropdown so the other options are visible without switching anything.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say — landing the recommendation</span>
+            <p>"You asked us in August for a view on dialer scope, so let me be complete rather than clever. Three patterns fit your business: what you just saw — an agentless notification before a test window expires; an agentless confirmation of a submitted test, same pattern; and an agent-assisted outreach path for when signals arrive from a site that should've been on test but isn't. My recommendation is you start with what's already running. The other two are ready when you want them."</p>
+          </div>
+          <h4 class="microhead">If they ask about Predictive specifically</h4>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"For a POC, Progressive is the live proof — deterministic, one call per available agent, easy to validate. Predictive is a configuration and architecture conversation rather than something to benchmark here. Genesys's own guidance calls for at least fifteen agents for a meaningful Predictive sample; a two-agent POC isn't an appropriate benchmark for it, and I'd rather tell you that directly than stage a demo that oversells what a small pool can show."</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= BEAT 7 ================= -->
+    <section class="card beat" id="beat7">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num">7</span>
+            <span><span class="beat-title">Reporting &amp; The Close</span><span class="beat-sub">Campaign Performance beside inbound Test-On reporting. ~4 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Open <span class="path">Analytics &gt; Analytics Workspace &gt; Campaign Performance</span> for <code>JCI Test Expiry Notification</code> in one tab, inbound Test-On reporting in an adjacent tab.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say</span>
+            <p>"Same reporting framework, same platform, same contacts. So you can actually answer 'did the notification reduce the calls we'd otherwise get' — instead of comparing two vendors' exports and hoping they line up."</p>
+          </div>
+          <div class="do block">
+            <span class="lbl">Do</span>
+            <p>Drill into Campaign Interaction Detail for the JCI-001 attempt from Beat 3. Show the wrap-up code that resulted.</p>
+          </div>
+          <div class="say block">
+            <span class="lbl">Say — a precise distinction worth making unprompted</span>
+            <p>"One thing I want to be precise about, because it matters if you're reconciling numbers later: Dials counts every attempt, not unique contacts. Contacts means something connected — it isn't proof the intended person was reached. That's Right Party Contact, and RPC is where success, neutral, and failure get classified."</p>
+          </div>
+          <div class="warn block">
+            <span class="lbl">Phrasing trap</span>
+            <p>Don't say "Contacts means we reached the customer." Say: "Contacts measures a connected call; RPC identifies whether the intended party was actually on it." If this campaign's flow-based branches are the closest equivalent to RPC in an agentless context, say so plainly rather than mapping it with false precision — flag it as something to confirm against your org's Flow Outcome configuration.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= DISCOVERY ================= -->
+    <section class="card" id="discovery">
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num" style="background:var(--ok-line)">ASK</span>
+            <span><span class="beat-title">Discovery to Extract Before You Leave</span><span class="beat-sub">The demo was entertainment if you leave without these. ~2 minutes.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+          <ul style="margin-bottom:0;">
+            <li>How many test windows expire without extension in a month, and what does the resulting activity actually cost you?</li>
+            <li>Who owns outbound today, and on what platform?</li>
+            <li>If you wanted this notification campaign in production, whose budget is that?</li>
+          </ul>
+          <div class="ok block" style="margin-top:14px;">
+            <span class="lbl">If the dialer-scope question still hasn't been answered by session time</span>
+            <p>Run the scene exactly as built and present the three patterns as the recommendation you were asked for on August 24th. The build stands on its own — you're not waiting on their answer to have something worth showing, and delivering the recommendation unprompted reads stronger than asking again.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= Q&A ================= -->
+    <section class="card" id="qa">
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num" style="background:var(--ink-faint)">REF</span>
+            <span><span class="beat-title">Anticipated Questions — Validated Answers</span><span class="beat-sub">Pivot here the moment the room goes technical or skeptical.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+
+          <h4 class="microhead">Dialing strategy &amp; scale</h4>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Why are you only running Agentless — what about the other dialing modes?</div>
+            <p>Agentless is the right fit for a notification with no agent judgment required. Preview, Progressive, Power, and Predictive all exist and are documented — they trade agent control for dialing efficiency in different ways. The recommendation in Beat 6 covers when each one earns its place; nothing here rules them out for a different use case.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Could we run Predictive with our team to see it live?</div>
+            <p>Genesys's own guidance recommends at least fifteen agents for a meaningful Predictive sample — a small pool doesn't produce an adequate basis for the agent-availability calculation. Progressive is the honest live-proof mode for a POC; Predictive is worth a configuration and architecture conversation once you know your real agent population.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Can agents handle inbound and outbound in the same session?</div>
+            <p>Yes, blended operation is supported. The one design consideration is that inbound work can change an agent's availability between when a call is dialed and when it connects — Progressive's precise/reservation option reduces that risk if you build an agent-based use case later.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>What actually limits throughput if this scales up?</div>
+            <p>Not just the dialer algorithm. Agent population (for agent-based modes), eligible contact population, your org's calls-per-second limit (15/sec by default, raisable through a Genesys Care request), telephony capacity, line allocation, contact rates, call duration, and compliance settings all contribute.</p>
+          </div>
+
+          <h4 class="microhead">Compliance &amp; controls</h4>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Does Genesys guarantee TCPA or other regulatory compliance?</div>
+            <p>No — and don't let that be the answer either way. Genesys supplies policy-enforcement controls: DNC, attempt restrictions, contactable time windows, abandonment thresholds. Your legal and compliance function defines the policy those controls implement.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>What stops you from calling someone too often?</div>
+            <p>Attempt Controls, if configured, cap dials per contact or per number by day or in total. Important nuance: if no attempt-control entry is assigned, no limit is imposed at all — so this has to be explicit in any production design, not assumed.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>How is local calling time enforced across your seven time zones?</div>
+            <p>Contactable Time Sets, or Automatic Time Zone Mapping for supported North American data. Worth being precise about one distinction: campaign schedule controls whether the campaign is running at all; contactable time controls whether an individual record is eligible right now. A campaign can be running while a specific record stays temporarily ineligible — that's not a bug, that's the two controls doing different jobs.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>What's the difference between a true abandon and a compliance abandon?</div>
+            <p>True Abandon: the customer disconnected before the call ever reached an agent or flow. Compliance Abandon: the customer answered but wasn't routed within the Compliance Abandon Threshold — two seconds by default. A call can be a Compliance Abandon without ever being a True Abandon; they measure different things.</p>
+          </div>
+
+          <h4 class="microhead">Data, reporting &amp; reconciliation</h4>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>How do you know a message was actually delivered versus left on a machine?</div>
+            <p>That's exactly what Beat 5 shows — call analysis distinguishes Live Voice from Answering Machine, and the response set sends each to an independent flow with its own wrap-up. It's not inferred after the fact; it's a real-time classification driving a different path.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Can we reconcile Genesys's numbers against our own systems or CRM?</div>
+            <p>Yes. A stable source identifier — <code>Contact_ID</code> in this build — plus Contact List, Campaign, Conversation ID, timestamps, and exported attempt/interaction detail gives you the correlation model: source record ↔ campaign ↔ attempt ↔ conversation ↔ disposition.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Is reporting limited to this UI?</div>
+            <p>No. Performance views handle operational analysis, saved views give supervisors a repeatable perspective, exports and scheduled exports produce files for reconciliation, Analytics APIs support custom BI or a data lake, and Outbound APIs allow programmatic management of the outbound objects themselves. One caution: don't claim every UI metric maps one-to-one to a single API field — for production design, that gets validated against the specific endpoint in the Developer Center.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>What does "Contact" actually mean in this reporting?</div>
+            <p>A connected call — it does not prove the intended person was reached. That's Right Party Contact, which further classifies as Success, Neutral, or Failure. Dials, Contacts, and RPC are three different counts; conflating them is the most common misread of outbound reporting.</p>
+          </div>
+
+          <h4 class="microhead">Competitive &amp; positioning</h4>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Doesn't NICE already have an outbound dialer? What's actually different here?</div>
+            <p>NICE has a dialer — this isn't a capability argument. The difference is that the conversational layer, routing, agent desktop, analytics, and dialer all sit on one platform with one contact model. In a stack where the AI or self-service vendor is separate from the dialer, that vendor cannot see or influence outbound at all. Beat 7's reporting comparison is the concrete version of this point — same contacts, same platform, one place to reconcile.</p>
+          </div>
+          <div class="qa-item">
+            <div class="qa-q"><span class="qmark">Q.</span>Why doesn't the notification flow ask for or verify a PIC?</div>
+            <p>Deliberate, and consistent with the inbound design: the notification confirms a site and offers an action, and never states or requests a PIC. An authorization decision doesn't happen over an unauthenticated outbound call in either direction of this build.</p>
+          </div>
+
+          <h4 class="microhead">Phrasing to avoid, live — quick cheat sheet</h4>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th style="width:46%">Don't say</th><th>Say instead</th></tr></thead>
+              <tbody>
+                <tr><td>"Genesys guarantees compliance."</td><td>"Genesys supplies controls used to implement your compliance policy."</td></tr>
+                <tr><td>"Predictive didn't work well with two agents."</td><td>"A two-agent POC isn't an appropriate Predictive benchmark."</td></tr>
+                <tr><td>"Contacts means we reached the customer."</td><td>"Contacts measures a connected call; RPC identifies the intended party."</td></tr>
+                <tr><td>"Wrap-up is just reporting."</td><td>"In outbound, wrap-up mapping can change whether the number or contact stays callable."</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </details>
+    </section>
+
+    <!-- ================= QUICK REFERENCE ================= -->
+    <section class="card" id="quickref">
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="beat-num" style="background:var(--ink-faint)">REF</span>
+            <span><span class="beat-title">Quick Reference</span><span class="beat-sub">Contact list, wrap-up map, flow structures — for when you need the exact number mid-sentence.</span></span>
+          </div>
+          <span class="chevron">▶</span>
+        </summary>
+        <div class="beat-body">
+
+          <h3>Contact list — all 12 records, dial order (Hours_Remaining ascending)</h3>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>ID</th><th>Site</th><th>Type</th><th>City, State</th><th>Hrs left</th><th>Max dur.</th><th>On DNC</th></tr></thead>
+              <tbody>
+                <tr><td>JCI-001</td><td>Target - Chicago 1</td><td>BA</td><td>Chicago, IL</td><td>2</td><td>4</td><td>—</td></tr>
+                <tr><td>JCI-002</td><td>Walmart - New York 1</td><td>BA</td><td>New York, NY</td><td>3</td><td>4</td><td>—</td></tr>
+                <tr><td>JCI-003</td><td>Walmart - Seattle 1</td><td>FA</td><td>Seattle, WA</td><td>4</td><td>4</td><td>—</td></tr>
+                <tr><td>JCI-004</td><td>AT&amp;T - Portland 2</td><td>FA</td><td>Portland, OR</td><td>5</td><td>4</td><td>—</td></tr>
+                <tr class="flag"><td>JCI-005</td><td>Target - Los Angeles 3</td><td>BA</td><td>Los Angeles, CA</td><td>6</td><td>4</td><td><strong>Yes</strong> (after pre-flight fix)</td></tr>
+                <tr><td>JCI-006</td><td>Target - Miami 1</td><td>FA</td><td>Miami, FL</td><td>7</td><td>8</td><td>—</td></tr>
+                <tr><td>JCI-007</td><td>Target - Miami 2</td><td>FA</td><td>Miami, FL</td><td>9</td><td>8</td><td>—</td></tr>
+                <tr><td>JCI-008</td><td>Target - Denver 1</td><td>FA</td><td>Denver, CO</td><td>11</td><td>24</td><td>—</td></tr>
+                <tr><td>JCI-009</td><td>Target - Denver 2</td><td>BA</td><td>Denver, CO</td><td>14</td><td>24</td><td>—</td></tr>
+                <tr><td>JCI-010</td><td>Walmart - Boise 1</td><td>BA</td><td>Boise, ID</td><td>18</td><td>24</td><td>—</td></tr>
+                <tr><td>JCI-011</td><td>Ross - Dallas 1</td><td>FA</td><td>Dallas, TX</td><td>22</td><td>168</td><td>—</td></tr>
+                <tr class="flag"><td>JCI-012</td><td>Walmart - Houston 2</td><td>BA</td><td>Houston, TX</td><td>26</td><td>168</td><td>Yes (also &gt;24h rule-excluded)</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="font-size:0.85rem;color:var(--ink-faint);">All twelve dial the same real test number, <code>317-771-5324</code>, since the JCI mock data's numbers are fictitious 555 numbers. <code>JCI-010 / Walmart - Boise 1</code> carries a hyphenated central station number, <code>H62797-6122</code>, straight from JCI's own data — the same non-standardized format the inbound flow normalizes, worth pointing at if the room is technical. The DNC file's third entry, <code>989-555-0147</code>, doesn't correspond to any record in this list — it's there for list realism, not tied to a beat.</p>
+
+          <h3>Call Analysis Response Set — <code>JCI Agentless Notification CARS</code></h3>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Result</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>Live Voice</td><td>Transfer to Flow → <code>JCI Test Expiry Notification</code></td></tr>
+                <tr><td>Answering Machine</td><td>Transfer to Flow → <code>JCI Test Expiry Notification — Machine Message</code></td></tr>
+                <tr><td>Fax</td><td>Hang Up</td></tr>
+                <tr><td>SIT / Disconnected</td><td>Hang Up</td></tr>
+                <tr><td>Busy · No Answer</td><td>No action — attempt controls handle the recall</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Flow structure — live flow</h3>
+          <pre>Start
+ └─ Set Participant Data   site, cs, ends, notify_type="test-expiry"
+ └─ Play Greeting  (TTS)
+ └─ Menu  "Expiry options"   timeout 7s, 2 retries
+     ├─ 1  Extend               → Wrap-up "JCI — Test Extended"
+     ├─ 2  No extension needed  → Wrap-up "JCI — No Extension Needed"
+     ├─ 9  Do not contact       → Wrap-up "JCI — Do Not Contact Requested"
+     └─ 0  Central station      → Transfer to ACD [verify] → Wrap-up "JCI — Central Station Requested"
+ └─ Timeout / no input x2   → Timeout close → Wrap-up "JCI — Message Left"
+ └─ Disconnect</pre>
+
+          <h3>Flow structure — machine-message flow</h3>
+          <pre>Start
+ └─ Set Participant Data   site, cs, ends, notify_type="test-expiry-machine"
+ └─ Play Message  (TTS, one-way, no menu)
+ └─ Set Wrap-up "JCI — Message Left"
+ └─ Disconnect</pre>
+
+          <h3>Campaign settings, at a glance</h3>
+          <div class="tablewrap">
+            <table>
+              <tbody>
+                <tr><td style="width:38%">Dialing Mode</td><td>Agentless</td></tr>
+                <tr><td>Outbound Lines</td><td>2</td></tr>
+                <tr><td>No-answer timeout</td><td>20 seconds</td></tr>
+                <tr><td>Caller ID Name</td><td>Johnson Controls Monitoring</td></tr>
+                <tr><td>DNC List</td><td>JCI Demo DNC</td></tr>
+                <tr><td>Rule Set</td><td>JCI Notification Rules — skips <code>Hours_Remaining</code> &gt; 24</td></tr>
+                <tr><td>Contact Sorting</td><td><code>Hours_Remaining</code> ascending</td></tr>
+                <tr><td>Contactable Time Set</td><td>JCI Notification Window</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </details>
+    </section>
+
+    <footer class="doc">
+      Internal use only. Built for an SC-owned Genesys Cloud org — not the POC tenant. No JCI metrics, entitlements, or commercial terms are invented anywhere in this document; items still needing org-level confirmation are marked <span class="tag t-val">verify</span>.
+    </footer>
+
+  </main>
+</div>
+
+<div class="floatnav">
+  <button id="prevBtn" title="Previous section">↑ Prev</button>
+  <button id="nextBtn" title="Next section">Next ↓</button>
+</div>
+
+<script>
+(function(){
+  var sectionIds = ['preflight','beat1','beat2','beat3','beat4','beat5','beat6','beat7','discovery','qa','quickref'];
+  var sections = sectionIds.map(function(id){ return document.getElementById(id); }).filter(Boolean);
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+
+  // ---------- theme ----------
+  var themeBtn = document.getElementById('themeToggle');
+  themeBtn.addEventListener('click', function(){
+    var html = document.documentElement;
+    var isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeBtn.textContent = isDark ? '🌙 Dark' : '☀️ Light';
+  });
+
+  // ---------- expand / collapse all ----------
+  document.getElementById('expandAll').addEventListener('click', function(){
+    document.querySelectorAll('details').forEach(function(d){ d.open = true; });
+  });
+  document.getElementById('collapseAll').addEventListener('click', function(){
+    document.querySelectorAll('details').forEach(function(d){ d.open = false; });
+  });
+
+  // ---------- timer ----------
+  var elapsed = 0, running = false, tick = null;
+  var display = document.getElementById('timerDisplay');
+  var budgetedStarts = tocLinks.filter(function(a){ return a.dataset.start !== undefined; });
+
+  function fmt(sec){
+    var m = Math.floor(sec/60), s = sec%60;
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  }
+  function renderTimer(){
+    display.textContent = fmt(elapsed);
+    var current = null;
+    budgetedStarts.forEach(function(a){
+      var st = parseInt(a.dataset.start, 10);
+      if (elapsed >= st) current = a;
+    });
+    budgetedStarts.forEach(function(a){ a.classList.remove('on-script'); });
+    if (current) current.classList.add('on-script');
+  }
+  document.getElementById('btnStart').addEventListener('click', function(){
+    if (running) return;
+    running = true;
+    tick = setInterval(function(){ elapsed++; renderTimer(); }, 1000);
+  });
+  document.getElementById('btnPause').addEventListener('click', function(){
+    running = false;
+    clearInterval(tick);
+  });
+  document.getElementById('btnReset').addEventListener('click', function(){
+    running = false;
+    clearInterval(tick);
+    elapsed = 0;
+    renderTimer();
+  });
+  renderTimer();
+
+  // ---------- scroll spy ----------
+  var spyMap = {};
+  tocLinks.forEach(function(a){ spyMap[a.dataset.target] = a; });
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        var link = spyMap[entry.target.id];
+        if (!link) return;
+        if (entry.isIntersecting) {
+          tocLinks.forEach(function(a){ a.classList.remove('active'); });
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+    sections.forEach(function(s){ obs.observe(s); });
+  }
+
+  // ---------- prev / next + arrow keys ----------
+  function currentIndex(){
+    var activeLink = document.querySelector('#toc a.active');
+    if (activeLink) {
+      var idx = sectionIds.indexOf(activeLink.dataset.target);
+      if (idx !== -1) return idx;
+    }
+    return 0;
+  }
+  function goTo(idx){
+    idx = Math.max(0, Math.min(sections.length-1, idx));
+    sections[idx].scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  document.getElementById('nextBtn').addEventListener('click', function(){ goTo(currentIndex()+1); });
+  document.getElementById('prevBtn').addEventListener('click', function(){ goTo(currentIndex()-1); });
+  document.addEventListener('keydown', function(e){
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); goTo(currentIndex()+1); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); goTo(currentIndex()-1); }
+  });
+
+  // TOC click = smooth scroll + open the section if collapsed
+  tocLinks.forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var target = document.getElementById(a.dataset.target);
+      if (!target) return;
+      var d = target.querySelector('details');
+      if (d) d.open = true;
+      target.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  });
+})();
+</script>
+</body>
+</html>
