@@ -803,14 +803,14 @@
         <div class="tlitem">
           <div class="tldate">9/11 (today, AM)</div>
           <div class="tltitle">Outbound Dialer + FAQ/Knowledge recommendation — technical demos 2 &amp; 3</div>
-          <p>Both delivered as planned. The Outbound Dialer agentless-notification campaign and the Knowledge/NBA-based FAQ recommendation were demonstrated. The underlying dependency on Mario's real FAQ source content is a separate, still-open item — the capability was shown; the JCI-specific recommendation JCI actually asked for on 8/24 isn't necessarily finalized. A sixth collaborative design session with ProServices is also counted in this window, not independently detailed in the sources behind this document.</p>
+          <p>Both delivered as planned. Attendees on the Outbound Dialer session: Zach, Tom, Todd Sommer for Genesys; Mario Navarro, Ulysses Parker, and <strong>Darrell Wunderlich</strong> for JCI — the business-rules track and the infrastructure track are drawing from the same JCI bench, not two disconnected groups. The agentless test-expiry notification campaign was shown end to end against a real use case (technicians on active system tests): self-service menu (extend / no extension needed / transfer to Central Station / stop notifications), automatic wrap-up codes per branch, an answering-machine-specific message flow, DNC and wrong-number handling treated as distinct dispositions, and a live run against 11 contacts — fewer calls actually placed than contacts loaded, by design, due to DNC and time-zone-window exclusions. Ulysses framed the current manual process (techs have to notice time is short and call in) and Rich raised a proactive-notification concept — using recorded test-end-time and site status to reach a tech before expiry rather than after. Rich also confirmed the platform is open-API-driven for third-party contact-list updates, which Ulysses flagged as relevant for tying this into JCI systems of record. The Knowledge/NBA-based FAQ recommendation was demonstrated separately; the underlying dependency on Mario's real FAQ source content is still open — the capability was shown, but the JCI-specific recommendation JCI asked for on 8/24 isn't necessarily finalized. A sixth collaborative design session with ProServices is also counted in this window, not independently detailed in the sources behind this document.</p>
           <div class="tltags"><span class="tag tag-ok">Demos 2 &amp; 3 complete</span><span class="tag tag-gap">No commercial mention</span></div>
         </div>
         <div class="tlitem">
           <div class="tldate">9/11 (today, PM)</div>
           <div class="tltitle">Global infrastructure architecture deep dive — technical deep dive 3</div>
-          <p>A new workstream: Genesys architecture SMEs (referred to in the transcript as Ian, leading, and Darryl, supporting — distinct from JCI's own Darrell Wunderlich) walked JCI network/telephony engineers Yeshi and Artem through Genesys Cloud's global deployment model — home org and Global Media Fabric, dual-region hot-standby with warm switchover, microservice-level self-healing redundancy, 4-nines SLA, and data-residency handling for China and Canada. JCI's side volunteered a direct architecture comparison to NICE (see Competition), described a China Security Law review already run on NICE (see Paper Process), and confirmed a JCI-side network decision already made to route the "last mile" over standard internet rather than dedicated circuits, phasing out MPLS at two U.S. offices. Multiple further sessions were confirmed for the week of 9/15, "starting Monday."</p>
-          <div class="tltags"><span class="tag tag-flag">New stakeholders: Yeshi, Artem</span><span class="tag tag-gap">No commercial mention</span></div>
+          <p>A new workstream: Genesys architecture SME <strong>Ian Greene</strong> led the session (Zach and Tom also attended for Genesys) and walked JCI network/telephony engineers Yeshi and Artem, plus Darrell Wunderlich, through Genesys Cloud's global deployment model — home org and Global Media Fabric, dual-region hot-standby with warm switchover, microservice-level self-healing redundancy, 4-nines SLA, and data-residency handling for China and Canada. JCI's side volunteered a direct architecture comparison to NICE (see Competition), described a China Security Law review already run on NICE (see Paper Process), and confirmed a JCI-side network decision already made to route the "last mile" over standard internet rather than dedicated circuits, phasing out MPLS at two U.S. offices. Multiple further sessions were confirmed for the week of 9/15, "starting Monday." <em>Correction to the prior version of this document:</em> a second Genesys architecture SME ("Darryl") was earlier flagged as possibly distinct from Darrell Wunderlich. The source meeting notes for this session list only Ian Greene, Zach, and Tom on the Genesys side — no second Genesys architect. That flag is resolved: "Darryl" was an auto-caption artifact of Darrell Wunderlich's name, not a fourth stakeholder.</p>
+          <div class="tltags"><span class="tag tag-ok">Ambiguity resolved</span><span class="tag tag-flag">New stakeholders: Yeshi, Artem</span><span class="tag tag-gap">No commercial mention</span></div>
         </div>
         <div class="tlitem pending">
           <div class="tldate">Week of 9/15</div>
@@ -936,7 +936,7 @@
             <tr><td>Miguel Trenchs</td><td>Primary technical contact</td><td>Not involved in writing the POC doc; explicitly comparing vendors</td></tr>
             <tr><td>Ulysses Parker</td><td>Primary technical contact; session scheduling</td><td>Validation-process participant</td></tr>
             <tr><td>Darrell Wunderlich</td><td>Business rules authority</td><td>Validation-process participant; owns the combo/HVAC data point</td></tr>
-            <tr><td>Don Goodreau</td><td>Copied on every session, never speaks</td><td>Unexplained — possible EB proxy, unconfirmed</td></tr>
+            <tr><td>Don Goodreau</td><td>Director of Enterprise Shared Services, JCI (confirmed via LinkedIn). Copied on every session, never speaks</td><td>Title now known, but relevance to this POC still unexplained — possible EB proxy, unconfirmed</td></tr>
           </tbody>
         </table>
       </div>
@@ -960,11 +960,11 @@
             <tr><td>Zach Dudek</td><td>Principal Solution Consultant, lead SC</td></tr>
             <tr><td>Tom Nowinski</td><td>Account Executive — present on the 9/11 architecture call</td></tr>
             <tr><td>Todd Sommer</td><td>ProServices lead — owns the core POC build</td></tr>
-            <tr><td>Rich Heller</td><td>FRS / data model</td></tr>
-            <tr><td>Sarah Kidd</td><td>Conversational design</td></tr>
+            <tr><td>Rich Heller</td><td>PS Lead Engineer — POC design/build; raised the proactive-notification concept and confirmed open-API contact-list integration on the 9/11 outbound demo</td></tr>
+            <tr><td>Sarah Kidd</td><td>Principal PS Consultant — POC design/build; looped into the repurposed knowledge-management session</td></tr>
             <tr><td>Aasim Kamal</td><td>Web messaging MVP</td></tr>
-            <tr><td>Ian <span class="tag tag-flag">new, 9/11</span></td><td>Genesys architecture SME — led the deployment/redundancy walkthrough on the 9/11 architecture call</td></tr>
-            <tr><td>Darryl <span class="tag tag-flag">new, 9/11</span></td><td>Genesys architecture SME — supported with platform history and scale context. Distinct person from JCI's Darrell Wunderlich; the name coincidence is auto-transcript spelling only, worth double-checking before this goes in writing.</td></tr>
+            <tr><td>Ian Greene <span class="tag tag-flag">new, 9/11</span></td><td>Genesys architecture SME — led the deployment/redundancy walkthrough on the 9/11 architecture call</td></tr>
+            <tr><td colspan="2" style="font-style:italic; color:var(--ink-faint);">"Darryl" — removed. Prior version flagged a second Genesys architecture SME distinct from JCI's Darrell Wunderlich; the source meeting notes for that session list no such person. Resolved as an auto-caption artifact.</td></tr>
           </tbody>
         </table>
       </div>
