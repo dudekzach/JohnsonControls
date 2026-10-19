@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JCI Central Station Operations — Agent Script</title>
 <style>
   /* ============ Design tokens ============ */
@@ -19,6 +20,8 @@
     --warn-fg: #b3341f;
     --info-bg: #eaf1fb;
     --info-fg: #1f4e91;
+    --amber-bg: #fff4dc;
+    --amber-fg: #8a5a00;
   }
   * { box-sizing: border-box; }
   body {
@@ -31,11 +34,7 @@
   .app { max-width: 1020px; margin: 0 auto; }
 
   /* ============ Top identity bar ============ */
-  .topbar {
-    background: var(--jci-red);
-    color: white;
-    padding: 12px 20px;
-  }
+  .topbar { background: var(--jci-red); color: white; padding: 12px 20px; }
   .topbar .row1 { display: flex; align-items: center; gap: 10px; }
   .topbar .mark {
     width: 28px; height: 28px; background: white; color: var(--jci-red);
@@ -51,16 +50,15 @@
   }
   .context-strip .item .k { color: var(--sub); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; display: block; }
   .context-strip .item .v { font-weight: 700; }
+  .context-strip .item .v.link { color: var(--jci-red-dark); cursor: pointer; }
+  .context-strip .item .v.link:hover { text-decoration: underline; }
   .context-strip .exception-flag {
     margin-left: auto; background: var(--warn-bg); color: var(--warn-fg);
     padding: 4px 10px; border-radius: 5px; font-weight: 700; font-size: 0.78rem; align-self: center;
   }
 
   /* ============ Tabs ============ */
-  .tabbar {
-    display: flex; gap: 2px; background: #fff; border-bottom: 1px solid var(--line);
-    padding: 0 16px; overflow-x: auto;
-  }
+  .tabbar { display: flex; gap: 2px; background: #fff; border-bottom: 1px solid var(--line); padding: 0 16px; overflow-x: auto; }
   .tabbtn {
     background: none; border: none; padding: 12px 16px; font-size: 0.85rem; font-weight: 600;
     color: var(--sub); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap;
@@ -90,6 +88,7 @@
   .field-row:last-child { border-bottom: none; }
   .field-row .k { color: var(--sub); }
   .field-row .v { font-weight: 600; text-align: right; }
+  .field-row .v.pending { color: var(--amber-fg); font-weight: 600; }
 
   .pic-note, .info-note {
     background: var(--info-bg); color: var(--info-fg);
@@ -99,12 +98,9 @@
   /* Quick-nav cards on Overview */
   .quicknav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   @media (max-width: 640px) { .quicknav { grid-template-columns: 1fr; } }
-  .navcard {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
-    cursor: pointer; text-align: left;
-  }
+  .navcard { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; cursor: pointer; text-align: left; font-family: inherit; }
   .navcard:hover { border-color: var(--jci-red); }
-  .navcard .nc-title { font-weight: 700; font-size: 0.87rem; margin-bottom: 3px; }
+  .navcard .nc-title { font-weight: 700; font-size: 0.87rem; margin-bottom: 3px; color: var(--ink); }
   .navcard .nc-desc { font-size: 0.78rem; color: var(--sub); }
 
   /* Checklist */
@@ -112,6 +108,7 @@
   .checklist-item:last-child { border-bottom: none; }
   .checklist-item input[type=checkbox] { margin-top: 3px; width: 16px; height: 16px; flex: none; }
   .checklist-item label { font-size: 0.87rem; line-height: 1.4; }
+  .checklist-item .by { display: block; font-size: 0.74rem; color: var(--sub); margin-top: 1px; }
 
   /* Procedure list */
   .next-step { background: var(--ok-bg); border: 1px solid #cdeadb; border-radius: 8px; padding: 14px; }
@@ -123,25 +120,55 @@
   label.field-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--sub); margin-bottom: 4px; margin-top: 12px; }
   input[type=text], textarea, select {
     width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px;
-    font-size: 0.87rem; font-family: inherit; color: var(--ink);
+    font-size: 0.87rem; font-family: inherit; color: var(--ink); background: #fff;
   }
   textarea { resize: vertical; min-height: 70px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
 
   .btn {
     display: inline-block; background: var(--jci-red); color: white; border: none; border-radius: 7px;
-    padding: 10px 16px; font-size: 0.87rem; font-weight: 700; cursor: pointer; margin-top: 14px;
+    padding: 10px 16px; font-size: 0.87rem; font-weight: 700; cursor: pointer; margin-top: 14px; font-family: inherit;
   }
   .btn:hover { background: var(--jci-red-dark); }
-  .btn.secondary { background: #fff; color: var(--jci-red-dark); border: 1px solid var(--jci-red); }
+  .btn.secondary { background: #fff; color: var(--jci-red-dark); border: 1px solid var(--jci-red); margin-top: 0; padding: 7px 12px; font-size: 0.8rem; }
   .btn.secondary:hover { background: var(--warn-bg); }
   .btn.done { background: var(--ok-fg); }
 
-  .confirm-msg {
-    margin-top: 10px; font-size: 0.82rem; color: var(--ok-fg); font-weight: 600; display: none;
-  }
+  .confirm-msg { margin-top: 10px; font-size: 0.82rem; color: var(--ok-fg); font-weight: 600; display: none; }
   .confirm-msg.show { display: block; }
-
   .hint { font-size: 0.76rem; color: var(--sub); margin-top: 8px; line-height: 1.4; }
+
+  /* ============ Work Item tab (modeled on a Genesys Cloud work item) ============ */
+  .wi-head { padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; }
+  .wi-title-block { flex: 1 1 340px; min-width: 0; }
+  .wi-eyebrow { font-size: 0.72rem; color: var(--sub); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; margin-bottom: 3px; }
+  .wi-title { font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+  .wi-meta { display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; }
+  .wi-meta .m .k { display: block; font-size: 0.72rem; color: var(--sub); text-transform: uppercase; letter-spacing: 0.03em; }
+  .wi-meta .m .v { font-weight: 700; font-size: 0.9rem; }
+  .status-chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; background: var(--amber-bg); color: var(--amber-fg); }
+  .status-chip.resolved { background: var(--ok-bg); color: var(--ok-fg); }
+  .wi-desc { padding: 0 18px 16px; font-size: 0.86rem; color: var(--ink); line-height: 1.5; }
+
+  .coll-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; font-weight: 700; font-size: 0.95rem; border-bottom: 1px solid var(--line); }
+  .coll-head .chev { width: 16px; height: 16px; transition: transform .15s; color: var(--sub); }
+  .panel.collapsed .coll-head .chev { transform: rotate(180deg); }
+  .panel.collapsed .coll-head { border-bottom: none; }
+  .panel.collapsed .coll-body { display: none; }
+  .attr-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px 24px; padding: 18px; }
+  @media (max-width: 900px) { .attr-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .attr-grid { grid-template-columns: 1fr; } }
+  .attr .ak { font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; }
+  .attr .av { font-size: 0.84rem; color: #2b3138; word-break: break-word; }
+  .attr .av.id { text-decoration: underline; cursor: default; }
+  .attr .av.empty { color: var(--sub); }
+
+  .resolution { display: none; padding: 14px 18px; background: var(--ok-bg); border-top: 1px solid #cdeadb; font-size: 0.85rem; color: var(--ok-fg); }
+  .resolution.show { display: block; }
+  .resolution b { color: #14562c; }
+  .wi-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .wi-toolbar .tb-note { font-size: 0.76rem; color: var(--sub); }
 </style>
 </head>
 <body>
@@ -163,7 +190,8 @@
     <div class="item"><span class="k">Site</span><span class="v">JCI Distribution Center 12</span></div>
     <div class="item"><span class="k">Address</span><span class="v">4400 Miller Rd, Dearborn, MI</span></div>
     <div class="item"><span class="k">System</span><span class="v">FA — Fire Alarm</span></div>
-    <div class="item"><span class="k">Caller</span><span class="v">Cameron Loyal</span></div>
+    <div class="item"><span class="k">Caller</span><span class="v">Cameron Loyal · Technician</span></div>
+    <div class="item"><span class="k">Work item</span><span class="v link" id="ctxWorkItem" onclick="showTab('workitem')">Open · CJ Johnson</span></div>
     <div class="exception-flag">Active Alarm Exception</div>
   </div>
 
@@ -172,6 +200,7 @@
     <button class="tabbtn active" data-tab="overview" onclick="showTab('overview')">Overview</button>
     <button class="tabbtn" data-tab="verify" onclick="showTab('verify')">Caller Verification</button>
     <button class="tabbtn" data-tab="alarm" onclick="showTab('alarm')">Alarm Procedure</button>
+    <button class="tabbtn" data-tab="workitem" onclick="showTab('workitem')">Work Item</button>
     <button class="tabbtn" data-tab="schedule" onclick="showTab('schedule')">Test Scheduling</button>
     <button class="tabbtn" data-tab="wrapup" onclick="showTab('wrapup')">Wrap-Up</button>
   </div>
@@ -194,9 +223,9 @@
       <div class="panel">
         <div class="panel-header">Caller &amp; Request</div>
         <div class="panel-body">
-          <div class="field-row"><span class="k">Caller</span><span class="v">Cameron Loyal</span></div>
+          <div class="field-row"><span class="k">Caller</span><span class="v">Cameron Loyal (technician, in the field)</span></div>
           <div class="field-row"><span class="k">PIC validation</span><span class="v">Valid</span></div>
-          <div class="field-row"><span class="k">Intent</span><span class="v">Place System on Test</span></div>
+          <div class="field-row"><span class="k">Intent</span><span class="v">New test-on appointment — Place System on Test</span></div>
           <div class="field-row"><span class="k">Requested window</span><span class="v">Today, 8:00 AM–12:00 PM</span></div>
           <div class="field-row"><span class="k">Closing request</span><span class="v">Transfer</span></div>
           <div class="pic-note">PIC was already validated in self-service. Do not re-ask the caller for it — the code itself was never carried forward, only the validation result.</div>
@@ -208,6 +237,8 @@
         <div class="panel-body">
           <div class="field-row"><span class="k">Transfer reason</span><span class="v">Active Alarm Exception</span></div>
           <div class="field-row"><span class="k">Active alarm</span><span class="v">Yes</span></div>
+          <div class="field-row"><span class="k">Alarm zone / time first noticed</span><span class="v pending">Not yet captured — confirm with caller</span></div>
+          <div class="field-row"><span class="k">Work item</span><span class="v">Created automatically by the flow — see Work Item tab</span></div>
           <div class="info-note">Self-service correctly declined to schedule a test while an alarm is active on this account and transferred deliberately. Nothing above needs to be re-collected from the caller.</div>
         </div>
       </div>
@@ -215,16 +246,20 @@
       <div class="panel-header" style="border:none; background:none; padding-left:0; margin-top:6px;">Next steps</div>
       <div class="quicknav">
         <button class="navcard" onclick="showTab('verify')">
-          <div class="nc-title">Verify Caller →</div>
-          <div class="nc-desc">Confirm identity before discussing the alarm or account.</div>
+          <div class="nc-title">Caller Verification →</div>
+          <div class="nc-desc">See what self-service already validated.</div>
         </button>
         <button class="navcard" onclick="showTab('alarm')">
           <div class="nc-title">Review Alarm &amp; Procedure →</div>
           <div class="nc-desc">Confirm alarm details and follow the active-alarm procedure.</div>
         </button>
+        <button class="navcard" onclick="showTab('workitem')">
+          <div class="nc-title">Open Work Item →</div>
+          <div class="nc-desc">Review the work item created at transfer and ask alarm response to act on it.</div>
+        </button>
         <button class="navcard" onclick="showTab('schedule')">
           <div class="nc-title">Handle Test Request →</div>
-          <div class="nc-desc">Decide whether to reschedule the test or offer a callback.</div>
+          <div class="nc-desc">Reschedule the test for later today or tomorrow, or offer a callback.</div>
         </button>
         <button class="navcard" onclick="showTab('wrapup')">
           <div class="nc-title">Wrap Up →</div>
@@ -238,18 +273,18 @@
       <a class="back-link" onclick="showTab('overview')">← Back to Overview</a>
 
       <div class="panel">
-        <div class="panel-header">Verification checklist</div>
+        <div class="panel-header">Verification — completed in self-service</div>
         <div class="panel-body">
           <div class="checklist-item">
-            <input type="checkbox" id="v1"><label for="v1">Caller's stated name matches an authorized contact on this account</label>
+            <input type="checkbox" id="v1" checked disabled><label for="v1">PIC validated<span class="by">By the Virtual Agent. Validation result only — the code itself is not shown.</span></label>
           </div>
           <div class="checklist-item">
-            <input type="checkbox" id="v2"><label for="v2">Confirmed a callback number in case the call disconnects</label>
+            <input type="checkbox" id="v2" checked disabled><label for="v2">Caller identified: Cameron Loyal (technician)<span class="by">Matched to an authorized contact on this account.</span></label>
           </div>
           <div class="checklist-item">
-            <input type="checkbox" id="v3"><label for="v3">Confirmed the caller is on-site or has direct knowledge of current site conditions</label>
+            <input type="checkbox" id="v3" checked disabled><label for="v3">Site confirmed: JCI Distribution Center 12, 4400 Miller Rd, Dearborn, MI<span class="by">CS-88214-A · FA — Fire Alarm</span></label>
           </div>
-          <div class="info-note">PIC was validated in self-service (see Overview). This checklist covers what self-service does not — confirming the person you're speaking with now is authorized to act on this alarm condition.</div>
+          <div class="info-note">Nothing to re-verify. If the caller asks whether he needs to give his PIC again, the answer is no.</div>
         </div>
       </div>
     </div>
@@ -273,14 +308,80 @@
           <div class="next-step">
             <div class="heading">Follow in order</div>
             <ol>
-              <li>Confirm the active alarm with the caller — panel zone, alarm type, and approximate time raised.</li>
+              <li>Confirm the active alarm with the caller and explain why the system can't be placed on test right now.</li>
+              <li>Get the zone number or area showing the alarm, and roughly when the caller first noticed it.</li>
               <li>Do not place the system on test while the alarm is active, even for a partial system.</li>
-              <li>Follow standard alarm-verification procedure before offering to reschedule the test.</li>
-              <li>Once the alarm clears, offer to schedule the original test window or a new one (see Test Scheduling tab).</li>
+              <li>Flag zone verification to the alarm response team through the work item (see Work Item tab) and log a supervisor callback if the caller asks for one.</li>
+              <li>Once the alarm is confirmed clear, reschedule the test — later today or tomorrow morning, whichever the caller prefers (see Test Scheduling tab).</li>
             </ol>
           </div>
-          <label class="field-label" for="alarmnotes">Alarm details gathered from caller</label>
-          <textarea id="alarmnotes" placeholder="Zone, alarm type, time raised, any details the caller provides..."></textarea>
+          <div class="two-col">
+            <div>
+              <label class="field-label" for="alarmzone">Zone / area showing the alarm</label>
+              <input type="text" id="alarmzone" placeholder="e.g. Zone 4 — loading dock">
+            </div>
+            <div>
+              <label class="field-label" for="alarmtime">First noticed</label>
+              <input type="text" id="alarmtime" placeholder="e.g. About 10 minutes before the call">
+            </div>
+          </div>
+          <label class="field-label" for="alarmnotes">Other alarm details from caller</label>
+          <textarea id="alarmnotes" placeholder="Anything else the caller reports, including whether this has happened before on this panel..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ WORK ITEM ============ -->
+    <div class="tabpanel" id="tab-workitem">
+      <a class="back-link" onclick="showTab('overview')">← Back to Overview</a>
+
+      <div class="wi-toolbar">
+        <span class="tb-note">Created automatically by the Virtual Agent flow at transfer.</span>
+        <button class="btn secondary" id="wiRefresh" onclick="refreshWorkItem()">↻ Refresh</button>
+      </div>
+
+      <div class="panel">
+        <div class="wi-head">
+          <div class="wi-title-block">
+            <div class="wi-eyebrow">Work item</div>
+            <div class="wi-title">Active Alarm Exception — JCI Distribution Center 12 (Test-On Request)</div>
+          </div>
+          <div class="wi-meta">
+            <div class="m"><span class="k">Status</span><span class="v"><span class="status-chip" id="wiStatus">Open</span></span></div>
+            <div class="m"><span class="k">Owner</span><span class="v">CJ Johnson</span></div>
+          </div>
+        </div>
+        <div class="wi-desc">Technician Cameron Loyal requested a new test-on at JCI Distribution Center 12 (4400 Miller Rd, Dearborn, MI; CS-88214-A). Self-service found an active alarm and transferred the call. Alarm response to verify the alarm zone and confirm when the system is clear so the test can be rescheduled.</div>
+        <div class="resolution" id="wiResolution">
+          <b>Resolved by CJ Johnson:</b> Zone 4 checked, clear. Work item closed.
+        </div>
+      </div>
+
+      <div class="panel" id="coreAttrPanel">
+        <div class="coll-head" onclick="document.getElementById('coreAttrPanel').classList.toggle('collapsed')">
+          <span>Core attributes</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>
+        </div>
+        <div class="coll-body">
+          <div class="attr-grid">
+            <div class="attr"><div class="ak">Worktype</div><div class="av">Central Station - Active Alarm Exception</div></div>
+            <div class="attr"><div class="ak">Queue</div><div class="av">Central Station - Alarm Response</div></div>
+            <div class="attr"><div class="ak">Expiration date</div><div class="av" id="wiExpiration">—</div></div>
+            <div class="attr"><div class="ak">External contact</div><div class="av">Cameron Loyal</div></div>
+
+            <div class="attr"><div class="ak">Workbin</div><div class="av">Alarm Response</div></div>
+            <div class="attr"><div class="ak">Routing state</div><div class="av" id="wiRouting">Assigned (CJ Johnson)</div></div>
+            <div class="attr"><div class="ak">Life span</div><div class="av" id="wiLifespan">—</div></div>
+            <div class="attr"><div class="ak">Reporter</div><div class="av">Johnson Controls Virtual Assistant</div></div>
+
+            <div class="attr"><div class="ak">Division</div><div class="av">Central Station Operations</div></div>
+            <div class="attr"><div class="ak">Language</div><div class="av">English</div></div>
+            <div class="attr"><div class="ak">Last modified</div><div class="av" id="wiModified">—</div></div>
+            <div class="attr"><div class="ak">ID</div><div class="av id">8f3a1c52-7d94-4e0b-b6a1-2c9e5d7a40f3</div></div>
+
+            <div class="attr"><div class="ak">External tag</div><div class="av">Active Alarm Exception</div></div>
+            <div class="attr"><div class="ak">Skills</div><div class="av">Fire Alarm, Escalations</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -293,7 +394,7 @@
         <div class="panel-header">Original request</div>
         <div class="panel-body">
           <div class="field-row"><span class="k">Requested window</span><span class="v">Today, 8:00 AM–12:00 PM</span></div>
-          <div class="info-note">This cannot be honored while the alarm is active. Choose one path below.</div>
+          <div class="info-note">This cannot be honored while the alarm is active. Choose one path below once alarm response confirms the zone is clear.</div>
         </div>
       </div>
 
@@ -303,12 +404,13 @@
           <label class="field-label" for="schedchoice">Path</label>
           <select id="schedchoice">
             <option value="">Select...</option>
+            <option value="later">Reschedule for later today (tentative)</option>
+            <option value="tomorrow">Reschedule for tomorrow morning (tentative)</option>
             <option value="callback">Offer callback once alarm clears</option>
-            <option value="reschedule">Schedule a new tentative window</option>
           </select>
 
           <label class="field-label" for="newwindow">New window / callback time (if applicable)</label>
-          <input type="text" id="newwindow" placeholder="e.g. Tomorrow, 9:00 AM–1:00 PM">
+          <input type="text" id="newwindow" placeholder="e.g. Today, 2:00 PM–5:00 PM (exact window to be confirmed)">
 
           <label class="field-label" for="schednotes">Notes</label>
           <textarea id="schednotes" placeholder="Anything the caller should know before you hang up..."></textarea>
@@ -331,9 +433,11 @@
             <option value="">Select...</option>
             <option>Active Alarm — Test Rescheduled</option>
             <option>Active Alarm — Escalated to Alarm Response</option>
+            <option>Active Alarm — Supervisor Callback Requested</option>
             <option>Active Alarm — Callback Requested</option>
             <option>Caller Disconnected</option>
           </select>
+          <div class="hint">Genesys Agent Copilot predicts the primary code for this call: Active Alarm — Test Rescheduled. You still select it.</div>
 
           <label class="field-label" for="wrapnotes">Notes</label>
           <textarea id="wrapnotes" placeholder="Summary for the record..."></textarea>
@@ -365,6 +469,32 @@
     btn.disabled = true;
     document.getElementById('wrapConfirm').classList.add('show');
   }
+
+  /* ---- Work item: dates are generated from the current time so they always look current ---- */
+  function fmtDate(d) {
+    var h = d.getHours(), ap = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    var mm = ('0' + d.getMinutes()).slice(-2);
+    return (d.getMonth() + 1) + '/' + d.getDate() + '/' + String(d.getFullYear()).slice(-2) + ', ' + h + ':' + mm + ' ' + ap;
+  }
+  function addDays(d, n) { return new Date(d.getTime() + n * 86400000); }
+  function stampWorkItem() {
+    var now = new Date();
+    document.getElementById('wiModified').textContent = fmtDate(now);
+    document.getElementById('wiExpiration').textContent = fmtDate(addDays(now, 7));
+    document.getElementById('wiLifespan').textContent = fmtDate(addDays(now, 8));
+  }
+  function refreshWorkItem() {
+    var chip = document.getElementById('wiStatus');
+    if (chip.classList.contains('resolved')) { stampWorkItem(); return; }
+    chip.textContent = 'Resolved';
+    chip.classList.add('resolved');
+    document.getElementById('wiRouting').textContent = 'Completed (CJ Johnson)';
+    document.getElementById('wiResolution').classList.add('show');
+    document.getElementById('ctxWorkItem').textContent = 'Resolved · CJ Johnson';
+    stampWorkItem();
+  }
+  stampWorkItem();
 </script>
 </body>
 </html>
